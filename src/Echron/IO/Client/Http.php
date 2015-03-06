@@ -16,4 +16,24 @@ class Http extends AbstractIOClient
     {
         // TODO: Implement push() method.
     }
+
+    public function getRemoteSize(string $remote): int
+    {
+        // TODO: Implement getRemoteSize() method.
+    }
+
+    public function getLocalSize(string $local): int
+    {
+        // TODO: Implement getLocalSize() method.
+    }
+
+    public function getRemoteChangeDate(string $remote): int
+    {
+        // TODO: Implement getRemoteChangeDate() method.
+    }
+
+    public function getLocalChangeDate(string $local): int
+    {
+        // TODO: Implement getLocalChangeDate() method.
+    }
 }
