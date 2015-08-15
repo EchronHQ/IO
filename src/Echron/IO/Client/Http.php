@@ -3,19 +3,29 @@ declare(strict_types = 1);
 namespace Echron\IO\Client;
 
 use Echron\IO\AbstractIOClient;
+use GuzzleHttp\Client as GuzzleClient;
 
 class Http extends AbstractIOClient
 {
+    private $guzzleClient;
+
+    public function __construct()
+    {
+        $this->guzzleClient = new GuzzleClient();
+    }
 
     public function pull(string $remote, string $local)
     {
-        // TODO: Implement pull() method.
+        $options = [];
+        $response = $this->guzzleClient->get($remote, $options);
+        $fileContent = $response->getBody();
+        file_put_contents($fileContent, $local);
     }
 
     public function push(string $local, string $remote)
     {
         // TODO: Implement push() method.
-    }
+
 
     public function getRemoteSize(string $remote): int
     {
