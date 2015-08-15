@@ -19,13 +19,14 @@ class Http extends AbstractIOClient
         $options = [];
         $response = $this->guzzleClient->get($remote, $options);
         $fileContent = $response->getBody();
-        file_put_contents($fileContent, $local);
+        file_put_contents($local, $fileContent);
     }
 
     public function push(string $local, string $remote)
     {
         // TODO: Implement push() method.
 
+    }
 
     public function getRemoteSize(string $remote): int
     {

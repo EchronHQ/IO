@@ -9,7 +9,7 @@ class HttpTest extends PHPUnit_Framework_TestCase
 
         $this->assertFileNotExists($destination);
         $client = new \Echron\IO\Client\Http();
-        $client->pull('https://www.google.be/images/branding/googlelogo/2x/googlelogo_color_120x44dp.png', $destination);
+        $client->pull('http://www.google.be/images/branding/googlelogo/2x/googlelogo_color_120x44dp.png', $destination);
 
         $this->assertFileExists($destination);
     }
