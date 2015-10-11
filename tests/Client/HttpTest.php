@@ -29,4 +29,20 @@ class HttpTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals(-1, $size);
     }
+
+    public function testGetFileChangeDate_FileExist()
+    {
+        $client = new \Echron\IO\Client\Http();
+        $size = $client->getRemoteChangeDate('http://www.google.be/images/branding/googlelogo/2x/googlelogo_color_120x44dp.png');
+
+        $this->assertEquals(1481158857, $size);
+    }
+
+    public function testGetFileChangeDate_FileDoesNotExist()
+    {
+        $client = new \Echron\IO\Client\Http();
+        $size = $client->getRemoteChangeDate('http://www.google.be/wuuuuuut/branding/googlelogo/2x/googlelogo_color_120x44dp.png');
+
+        $this->assertEquals(-1, $size);
+    }
 }
