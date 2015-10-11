@@ -3,6 +3,7 @@ declare(strict_types = 1);
 namespace Echron\IO\Client;
 
 use Echron\IO\AbstractIOClient;
+use Echron\IO\Data\FileStat;
 use GuzzleHttp\Client as GuzzleClient;
 
 class Http extends AbstractIOClient
@@ -24,27 +25,67 @@ class Http extends AbstractIOClient
 
     public function push(string $local, string $remote)
     {
-        // TODO: Implement push() method.
-
+        throw new \Exception('Not implemented');
     }
 
     public function getRemoteSize(string $remote): int
     {
-        // TODO: Implement getRemoteSize() method.
+        return $this->getRemoteFileStat($remote)
+                    ->getBytes();
+    }
+
+    private function getRemoteFileStat(string $remote): FileStat
+    {
+        $stat = new FileStat($remote);
+
+        try {
+            $fileHeadResponse = $this->guzzleClient->head($remote, []);
+
+            switch ($fileHeadResponse->getStatusCode()) {
+                case 200:
+
+                    if ($fileHeadResponse->hasHeader('Last-Modified')) {
+                        $lastModified = $fileHeadResponse->getHeaderLine('Last-Modified');
+                        $lastModified = strtotime($lastModified);
+                        $stat->setChangeDate($lastModified);
+                    } else {
+                        if ($fileHeadResponse->hasHeader('Date')) {
+                            $lastModified = $fileHeadResponse->getHeaderLine('date');
+                            $lastModified = strtotime($lastModified);
+                            $stat->setChangeDate($lastModified);
+                        }
+                    }
+
+                    if ($fileHeadResponse->hasHeader('Content-Length')) {
+                        $size = $fileHeadResponse->getHeaderLine('Content-Length');
+                        $size = intval($size);
+                        $stat->setBytes($size);
+                    }
+                    break;
+                case 401:
+                case 404:
+                    break;
+            }
+        } catch (\Exception $ex) {
+
+        }
+
+        return $stat;
     }
 
     public function getLocalSize(string $local): int
     {
-        // TODO: Implement getLocalSize() method.
+        throw new \Exception('Not implemented');
     }
 
     public function getRemoteChangeDate(string $remote): int
     {
-        // TODO: Implement getRemoteChangeDate() method.
+        return $this->getRemoteFileStat($remote)
+                    ->getChangeDate();
     }
 
     public function getLocalChangeDate(string $local): int
     {
-        // TODO: Implement getLocalChangeDate() method.
+        throw new \Exception('Not implemented');
     }
 }
