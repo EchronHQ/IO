@@ -73,19 +73,10 @@ class Http extends AbstractIOClient
         return $stat;
     }
 
-    public function getLocalSize(string $local): int
-    {
-        throw new \Exception('Not implemented');
-    }
-
     public function getRemoteChangeDate(string $remote): int
     {
         return $this->getRemoteFileStat($remote)
                     ->getChangeDate();
     }
 
-    public function getLocalChangeDate(string $local): int
-    {
-        throw new \Exception('Not implemented');
-    }
 }
