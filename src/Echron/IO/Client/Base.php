@@ -1,10 +1,10 @@
 <?php
 declare(strict_types = 1);
-namespace Echron\IO;
+namespace Echron\IO\Client;
 
 use Echron\IO\Data\FileStat;
 
-abstract class AbstractIOClient
+abstract class Base
 {
     abstract public function pull(string $remote, string $local);
 

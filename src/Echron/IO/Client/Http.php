@@ -2,11 +2,10 @@
 declare(strict_types = 1);
 namespace Echron\IO\Client;
 
-use Echron\IO\AbstractIOClient;
 use Echron\IO\Data\FileStat;
 use GuzzleHttp\Client as GuzzleClient;
 
-class Http extends AbstractIOClient
+class Http extends Base
 {
     private $guzzleClient;
 
