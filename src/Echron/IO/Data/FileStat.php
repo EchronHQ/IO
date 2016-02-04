@@ -4,11 +4,20 @@ namespace Echron\IO\Data;
 
 class FileStat
 {
-    private $path = '', $bytes = -1, $changeDate = -1, $exists = false;
+    private $path = '', $bytes = -1, $changeDate = -1, $exists = false, $type;
 
-    public function __construct(string $path)
+    public function __construct(string $path, FileType $type = null)
     {
         $this->path = $path;
+        if (is_null($type)) {
+            $type = FileType::Unknown();
+        }
+        $this->type = $type;
+    }
+
+    public function setType(FileType $type)
+    {
+        $this->type = $type;
     }
 
     public function setExists(bool $exists)
@@ -33,18 +42,25 @@ class FileStat
 
     public function equals(FileStat $fileStat): bool
     {
-        $equals = true;
+        if ($this->getType() !== $fileStat->getType()) {
+            return false;
+        }
         if ($this->getExists() !== $fileStat->getExists()) {
-            $equals = false;
+            return false;
         }
         if ($this->getChangeDate() !== $fileStat->getChangeDate()) {
-            $equals = false;
+            return false;
         }
         if ($this->getBytes() . '' !== $fileStat->getBytes() . '') {
-            $equals = false;
+            return false;
         }
 
-        return $equals;
+        return true;
+    }
+
+    public function getType(): FileType
+    {
+        return $this->type;
     }
 
     public function getExists(): bool

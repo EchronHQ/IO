@@ -47,21 +47,39 @@ class FileStatTest extends PHPUnit_Framework_TestCase
 
         $stat2 = new \Echron\IO\Data\FileStat('test2.txt');
         $stat2->setChangeDate($stat1->getChangeDate() - 10);
-        $stat2->setBytes(10);
+        $stat2->setBytes($stat1->getBytes());
 
         $this->assertFalse($stat1->equals($stat2));
         $this->assertFalse($stat2->equals($stat1));
     }
 
-    public function testEquals_Different_ChangeDateAndSize()
+    public function testEquals_Different_Type()
     {
         $stat1 = new \Echron\IO\Data\FileStat('test.txt');
+        $stat1->setType(\Echron\IO\Data\FileType::File());
         $stat1->setChangeDate(time());
         $stat1->setBytes(10);
 
         $stat2 = new \Echron\IO\Data\FileStat('test2.txt');
+        $stat2->setType(\Echron\IO\Data\FileType::Dir());
+        $stat2->setChangeDate($stat1->getChangeDate());
+        $stat2->setBytes($stat1->getBytes());
+
+        $this->assertFalse($stat1->equals($stat2));
+        $this->assertFalse($stat2->equals($stat1));
+    }
+
+    public function testEquals_Different_ChangeDateAndSizeAndType()
+    {
+        $stat1 = new \Echron\IO\Data\FileStat('test.txt');
+        $stat1->setType(\Echron\IO\Data\FileType::File());
+        $stat1->setChangeDate(time());
+        $stat1->setBytes(10);
+
+        $stat2 = new \Echron\IO\Data\FileStat('test2.txt');
+        $stat2->setType(\Echron\IO\Data\FileType::Dir());
         $stat2->setChangeDate($stat1->getChangeDate() - 10);
-        $stat2->setBytes(20);
+        $stat2->setBytes($stat1->getBytes() - 10);
 
         $this->assertFalse($stat1->equals($stat2));
         $this->assertFalse($stat2->equals($stat1));
