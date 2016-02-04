@@ -33,7 +33,7 @@ class Http extends Base
                     ->getBytes();
     }
 
-    private function getRemoteFileStat(string $remote): FileStat
+    public function getRemoteFileStat(string $remote): FileStat
     {
         $stat = new FileStat($remote);
 
@@ -78,4 +78,8 @@ class Http extends Base
                     ->getChangeDate();
     }
 
+    public function remoteFileExists(string $remote): bool
+    {
+        throw new \Exception('Not implemented');
+    }
 }
