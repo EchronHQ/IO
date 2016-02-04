@@ -4,11 +4,16 @@ namespace Echron\IO\Data;
 
 class FileStat
 {
-    private $path = '', $bytes = -1, $changeDate = -1;
+    private $path = '', $bytes = -1, $changeDate = -1, $exists = false;
 
     public function __construct(string $path)
     {
         $this->path = $path;
+    }
+
+    public function setExists(bool $exists)
+    {
+        $this->exists = $exists;
     }
 
     public function getPath(): string
@@ -26,13 +31,34 @@ class FileStat
         $this->changeDate = $changeDate;
     }
 
-    public function getBytes(): int
+    public function equals(FileStat $fileStat): bool
     {
-        return $this->bytes;
+        $equals = true;
+        if ($this->getExists() !== $fileStat->getExists()) {
+            $equals = false;
+        }
+        if ($this->getChangeDate() !== $fileStat->getChangeDate()) {
+            $equals = false;
+        }
+        if ($this->getBytes() . '' !== $fileStat->getBytes() . '') {
+            $equals = false;
+        }
+
+        return $equals;
+    }
+
+    public function getExists(): bool
+    {
+        return $this->exists;
     }
 
     public function getChangeDate(): int
     {
         return $this->changeDate;
+    }
+
+    public function getBytes(): int
+    {
+        return $this->bytes;
     }
 }
