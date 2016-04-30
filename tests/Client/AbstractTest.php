@@ -3,7 +3,7 @@ declare(strict_types = 1);
 
 class AbstractTest extends PHPUnit_Framework_TestCase
 {
-    private $existingTestFile = 'test.txt';
+    private $existingTestFile;
     private $nonExistingTestFile = 'notexistingtest.txt';
     private $changeDate = 0;
 
@@ -59,16 +59,18 @@ class AbstractTest extends PHPUnit_Framework_TestCase
         $this->removeTestFiles();
 
         $this->changeDate = date('U');
+
+        $this->existingTestFile = tempnam(sys_get_temp_dir(), 'io_test');
         file_put_contents($this->existingTestFile, 'ThisIsATestFile');
 
     }
 
     private function removeTestFiles()
     {
-        if (file_exists($this->existingTestFile)) {
+        if ($this->existingTestFile !== null && file_exists($this->existingTestFile)) {
             unlink($this->existingTestFile);
         }
-        if (file_exists($this->nonExistingTestFile)) {
+        if ($this->nonExistingTestFile !== null && file_exists($this->nonExistingTestFile)) {
             unlink($this->nonExistingTestFile);
         }
     }

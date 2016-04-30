@@ -8,3 +8,7 @@ HTTP(S)                 Todo
 Dropbox                 Todo
 OneDrive                Todo
 Amazon S3               Todo
+
+
+#TODO: 
+Add client possibility functions like "canChangeRemoteDate" or "canPush" ?

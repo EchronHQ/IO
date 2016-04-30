@@ -10,15 +10,13 @@ abstract class Base
 
     abstract public function push(string $local, string $remote);
 
-    abstract public function getRemoteSize(string $remote): int;
-
-    public final function getLocalSize(string $local): int
+    public function getLocalSize(string $local): int
     {
         return $this->getLocalFileStat($local)
                     ->getBytes();
     }
 
-    private function getLocalFileStat(string $local): FileStat
+    public function getLocalFileStat(string $local): FileStat
     {
         $stat = new FileStat($local);
         if (file_exists($local)) {
@@ -33,9 +31,21 @@ abstract class Base
         return $stat;
     }
 
-    abstract public function getRemoteChangeDate(string $remote): int;
+    public function getRemoteChangeDate(string $remote): int
+    {
+        return $this->getRemoteFileStat($remote)
+                    ->getChangeDate();
+    }
 
-    public final function getLocalChangeDate(string $local): int
+    abstract public function getRemoteFileStat(string $remote): FileStat;
+
+    public function getRemoteSize(string $remote): int
+    {
+        return $this->getRemoteFileStat($remote)
+                    ->getBytes();
+    }
+
+    public function getLocalChangeDate(string $local): int
     {
         return $this->getLocalFileStat($local)
                     ->getChangeDate();
@@ -55,6 +65,7 @@ abstract class Base
                 $downloaded = $this->pull($remote, $local);
                 if ($downloaded) {
                     $this->setLocalChangeDate($local, $remoteFileStat->getChangeDate());
+
                     return true;
                 } else {
                     return false;
@@ -67,13 +78,18 @@ abstract class Base
 
     abstract public function remoteFileExists(string $remote): bool;
 
-    abstract public function getRemoteFileStat(string $remote): FileStat;
-
     abstract public function pull(string $remote, string $local);
 
-    public final function setLocalChangeDate(string $local, int $changeDate)
+    public function setLocalChangeDate(string $local, int $changeDate)
     {
         FileSystem::touch($local, \DateTime::createFromFormat('U', $changeDate));
+    }
+
+    abstract public function setRemoteChangeDate(string $remote, int $changeDate);
+
+    public function removeLocal(string $local): bool
+    {
+        return unlink($local);
     }
 
 }

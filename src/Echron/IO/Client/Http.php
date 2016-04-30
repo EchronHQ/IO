@@ -27,11 +27,6 @@ class Http extends Base
         throw new \Exception('Not implemented');
     }
 
-    public function getRemoteSize(string $remote): int
-    {
-        return $this->getRemoteFileStat($remote)
-                    ->getBytes();
-    }
 
     public function getRemoteFileStat(string $remote): FileStat
     {
@@ -72,13 +67,14 @@ class Http extends Base
         return $stat;
     }
 
-    public function getRemoteChangeDate(string $remote): int
-    {
-        return $this->getRemoteFileStat($remote)
-                    ->getChangeDate();
-    }
+
 
     public function remoteFileExists(string $remote): bool
+    {
+        throw new \Exception('Not implemented');
+    }
+
+    public function setRemoteChangeDate(string $remote, int $changeDate)
     {
         throw new \Exception('Not implemented');
     }
