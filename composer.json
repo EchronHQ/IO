@@ -12,7 +12,8 @@
   "require": {
     "php": ">=7.0.0",
     "guzzlehttp/guzzle": "^6.0.0",
-    "echron/tools": "^1.0"
+    "echron/tools": "^1.0",
+    "phpseclib/phpseclib": "^2.0"
   },
   "autoload": {
     "psr-0": {
