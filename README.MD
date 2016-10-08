@@ -2,10 +2,10 @@
 
 #Clients
 FTP                     Todo
-SFTP                    Todo
-HTTP(S)                 Todo
+SFTP                    Done
+HTTP(S)                 Done
 - with authentication   Todo
-Dropbox                 Todo
+Dropbox                 Done
 OneDrive                Todo
 Amazon S3               Todo
 

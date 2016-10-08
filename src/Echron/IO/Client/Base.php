@@ -3,6 +3,7 @@ declare(strict_types = 1);
 namespace Echron\IO\Client;
 
 use Echron\IO\Data\FileStat;
+use Echron\IO\Data\FileType;
 use Echron\Tools\FileSystem;
 
 abstract class Base
@@ -25,6 +26,8 @@ abstract class Base
 
             $stat->setChangeDate($fileModificationTime);
             $stat->setBytes($fileSize);
+            //TODO: determine file type
+            $stat->setType(FileType::File());
 
         }
 
