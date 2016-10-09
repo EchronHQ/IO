@@ -27,6 +27,10 @@ class Http extends Base
         throw new \Exception('Not implemented');
     }
 
+    public function delete(string $remote)
+    {
+        throw new \Exception('Not implemented');
+    }
 
     public function getRemoteFileStat(string $remote): FileStat
     {
@@ -66,8 +70,6 @@ class Http extends Base
 
         return $stat;
     }
-
-
 
     public function remoteFileExists(string $remote): bool
     {

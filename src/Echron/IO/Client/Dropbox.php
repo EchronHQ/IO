@@ -103,6 +103,11 @@ class Dropbox extends Base
                     ->getExists();
     }
 
+    public function delete(string $remote)
+    {
+        $this->dropboxClient->delete($remote);
+    }
+
     public function pull(string $remote, string $local)
     {
         /**

@@ -76,6 +76,11 @@ class Bridge extends Base
         throw new \Exception('Not implemented');
     }
 
+    public function delete(string $remote)
+    {
+        return $this->slave->delete($remote);
+    }
+
     public function getRemotePath(string $remotePath): string
     {
         return $remotePath;

@@ -68,6 +68,11 @@ class SFTP extends Base
         return $parsedtype;
     }
 
+    public function delete(string $remote)
+    {
+        $this->sftpClient->delete($remote);
+    }
+
     public function remoteFileExists(string $remote): bool
     {
         return $this->sftpClient->file_exists($remote);
