@@ -88,6 +88,8 @@ abstract class Base
         FileSystem::touch($local, \DateTime::createFromFormat('U', $changeDate));
     }
 
+    abstract public function delete(string $remote);
+
     abstract public function setRemoteChangeDate(string $remote, int $changeDate);
 
     public function removeLocal(string $local): bool

@@ -64,6 +64,14 @@ class Memory extends Base
         return $file['stat'];
     }
 
+    public function delete(string $remote)
+    {
+        $hashedName = $this->hashFileName($remote);
+        if (isset($this->files[$hashedName])) {
+            unset($this->files[$hashedName]);
+        }
+    }
+
     public function pull(string $remote, string $local)
     {
         if ($this->remoteFileExists($remote)) {

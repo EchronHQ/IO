@@ -73,4 +73,24 @@ class MemoryTest extends PHPUnit_Framework_TestCase
 
     }
 
+    public function testDelete_Existing()
+    {
+        $client = new \Echron\IO\Client\Memory();
+
+        $localTestFile = tempnam(sys_get_temp_dir(), 'io_test');
+        $localTestFileContent = 'ThisIsATestFile' . uniqid();
+
+        file_put_contents($localTestFile, $localTestFileContent);
+
+        $remoteTestLocation = 'root/test';
+
+        $client->push($localTestFile, $remoteTestLocation);
+
+        $this->assertTrue($client->remoteFileExists($remoteTestLocation));
+
+        $client->delete($remoteTestLocation);
+
+        $this->assertFalse($client->remoteFileExists($remoteTestLocation));
+    }
+
 }
