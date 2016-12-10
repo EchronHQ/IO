@@ -2,12 +2,24 @@
 declare(strict_types = 1);
 namespace Echron\IO\Client;
 
+use Echron\IO\Data\Capabilities;
 use Echron\IO\Data\FileStat;
 use Echron\IO\Data\FileType;
 use Echron\Tools\FileSystem;
 
 abstract class Base
 {
+    protected $capabilities;
+
+    public function __construct()
+    {
+        $this->capabilities = new Capabilities();
+    }
+
+    public final function getCapabilities(): Capabilities
+    {
+        return $this->capabilities;
+    }
 
     abstract public function push(string $local, string $remote);
 

@@ -11,7 +11,15 @@ class Memory extends Base
 
     public function __construct()
     {
+        parent::__construct();
         $this->files = [];
+
+        $this->capabilities->setCanPush(true);
+        $this->capabilities->setCanPull(true);
+        $this->capabilities->setCanChangeModifyDate(true);
+        $this->capabilities->setCanCopy(true);
+        $this->capabilities->setCanDelete(true);
+        $this->capabilities->setCanMove(true);
     }
 
     public function push(string $local, string $remote)

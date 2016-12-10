@@ -14,12 +14,22 @@ class SFTP extends Base
 
     public function __construct(string $host, string $username, string $password, int $port = 22)
     {
+
+        parent::__construct();
+
         $this->host = $host;
         $this->username = $username;
         $this->password = $password;
         $this->port = $port;
 
         $this->initClient();
+
+        $this->capabilities->setCanPush(true);
+        $this->capabilities->setCanPull(true);
+        $this->capabilities->setCanChangeModifyDate(true);
+        $this->capabilities->setCanCopy(true);
+        $this->capabilities->setCanDelete(true);
+        $this->capabilities->setCanMove(true);
     }
 
     private function initClient()

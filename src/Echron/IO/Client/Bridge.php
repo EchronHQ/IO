@@ -10,8 +10,14 @@ class Bridge extends Base
 
     public function __construct(Base $master, Base $slave)
     {
+        parent::__construct();
+
         $this->master = $master;
         $this->slave = $slave;
+        
+        $this->capabilities->setCanPush(true);
+        $this->capabilities->setCanPull(true);
+        $this->capabilities->setCanChangeModifyDate(true);
     }
 
     public function getMaster(): Base
@@ -83,7 +89,7 @@ class Bridge extends Base
 
     public function delete(string $remote)
     {
-        return $this->slave->delete($remote);
+        throw new \Exception('Not implemented');
     }
 
     public function moveRemoteFile(string $remoteSource, string $remoteDestination)

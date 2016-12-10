@@ -11,7 +11,12 @@ class Http extends Base
 
     public function __construct()
     {
+        parent::__construct();
         $this->guzzleClient = new GuzzleClient();
+
+        $this->capabilities->setCanPush(false);
+        $this->capabilities->setCanPull(true);
+        $this->capabilities->setCanChangeModifyDate(false);
     }
 
     public function pull(string $remote, string $local)
@@ -20,7 +25,7 @@ class Http extends Base
         $response = $this->guzzleClient->get($remote, $options);
         $fileContent = $response->getBody();
         file_put_contents($local, $fileContent);
-       
+
     }
 
     public function push(string $local, string $remote)

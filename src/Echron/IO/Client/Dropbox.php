@@ -19,12 +19,22 @@ class Dropbox extends Base
 
     public function __construct(string $clientId, string $clientSecret, string $accessToken = null)
     {
+        parent::__construct();
         $this->clientId = $clientId;
         $this->clientSecret = $clientSecret;
         $this->accessToken = $accessToken;
 
         $dropboxApp = new DropboxApp($this->clientId, $this->clientSecret, $this->accessToken);
         $this->dropboxClient = new \Kunnu\Dropbox\Dropbox($dropboxApp);
+
+        $this->capabilities->setCanPush(true);
+        $this->capabilities->setCanPull(true);
+        $this->capabilities->setCanChangeModifyDate(true);
+        $this->capabilities->setCanCopy(true);
+        $this->capabilities->setCanDelete(true);
+        $this->capabilities->setCanMove(true);
+
+        //TODO: authenticate application
 
 //        $authHelper = $this->dropboxClient->getAuthHelper();
 //
