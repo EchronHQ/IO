@@ -20,6 +20,7 @@ class Http extends Base
         $response = $this->guzzleClient->get($remote, $options);
         $fileContent = $response->getBody();
         file_put_contents($local, $fileContent);
+       
     }
 
     public function push(string $local, string $remote)

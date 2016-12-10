@@ -44,10 +44,9 @@ class Memory extends Base
     {
         $hashedName = $this->hashFileName($name);
         if (isset($this->files[$hashedName])) {
-            $this->files[$hashedName];
+            return $this->files[$hashedName];
         }
-
-        return $this->files[$hashedName];
+        throw new \Exception('File "' . $name . '" does not exist');
     }
 
     public function remoteFileExists(string $remote): bool
@@ -59,9 +58,16 @@ class Memory extends Base
 
     public function getRemoteFileStat(string $remote): FileStat
     {
-        $file = $this->getFile($remote);
+        if ($this->remoteFileExists($remote)) {
+            $file = $this->getFile($remote);
 
-        return $file['stat'];
+            return $file['stat'];
+        }
+
+        $fileStat = new FileStat($remote);
+        $fileStat->setExists(false);
+
+        return $fileStat;
     }
 
     public function delete(string $remote)
@@ -80,7 +86,7 @@ class Memory extends Base
 
             file_put_contents($local, $data);
         } else {
-            throw new \Exception('Unable to pull file: remote does not exist');
+            throw new \Exception('Unable to pull file: remote "' . $remote . '" does not exist');
         }
     }
 

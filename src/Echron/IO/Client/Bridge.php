@@ -14,6 +14,16 @@ class Bridge extends Base
         $this->slave = $slave;
     }
 
+    public function getMaster(): Base
+    {
+        return $this->master;
+    }
+
+    public function getSlave(): Base
+    {
+        return $this->slave;
+    }
+
     public function push(string $masterPath, string $slavePath)
     {
         $tmpLocalPath = $this->getTempFilename();
@@ -71,14 +81,14 @@ class Bridge extends Base
         return $this->master->getRemoteFileStat($masterPath);
     }
 
-    public function moveRemoteFile(string $remoteSource, string $remoteDestination)
-    {
-        throw new \Exception('Not implemented');
-    }
-
     public function delete(string $remote)
     {
         return $this->slave->delete($remote);
+    }
+
+    public function moveRemoteFile(string $remoteSource, string $remoteDestination)
+    {
+        throw new \Exception('Not implemented');
     }
 
     public function getRemotePath(string $remotePath): string
