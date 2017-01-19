@@ -11,10 +11,11 @@
   ],
   "require": {
     "php": ">=7.0.0",
-    "guzzlehttp/guzzle": "^6.0.0",
-    "echron/tools": "^1.0",
-    "phpseclib/phpseclib": "^2.0",
-    "kunalvarma05/dropbox-php-sdk": "^0.1.2"
+    "guzzlehttp/guzzle": "6.2.2",
+    "aws/aws-sdk-php": "3.23.*",
+    "echron/tools": "1.0.*",
+    "phpseclib/phpseclib": "2.0.*",
+    "kunalvarma05/dropbox-php-sdk": "0.1.*"
   },
   "autoload": {
     "psr-0": {
