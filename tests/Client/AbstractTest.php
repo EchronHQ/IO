@@ -122,7 +122,7 @@ abstract class AbstractTest extends PHPUnit_Framework_TestCase
         $client = $this->getClient();
 
         $remoteLocation = $this->getRemoteTestFilePath();
-
+        $client->delete($remoteLocation);
         $this->assertFalse($client->remoteFileExists($remoteLocation));
 
     }
