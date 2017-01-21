@@ -37,15 +37,15 @@ abstract class AbstractTest extends PHPUnit_Framework_TestCase
 
         $remoteFileStat = $client->getRemoteFileStat($remote);
 
-        $this->assertEquals($fileStat->getBytes(), $remoteFileStat->getBytes());
-        $this->assertEquals($fileStat->getChangeDate(), $remoteFileStat->getChangeDate());
+        $this->assertEquals($fileStat->getBytes(), $remoteFileStat->getBytes(), 'Size should be the same');
+        $this->assertEquals($fileStat->getChangeDate(), $remoteFileStat->getChangeDate(), 'Changedate should be the smae');
 
         //$this->assertTrue($fileStat->equals($remoteFileStat));
 
         $client->pull($remote, $local);
-        $this->assertFileExists($local);
+        $this->assertFileExists($local, 'File should exist');
         $fileContent = file_get_contents($local);
-        $this->assertEquals($content, $fileContent);
+        $this->assertEquals($content, $fileContent, 'Content should be the same');
 
     }
 
