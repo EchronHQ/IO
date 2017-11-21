@@ -1,9 +1,11 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
+
 namespace Echron\IO\Client;
 
 use Echron\IO\Data\FileStat;
 use Echron\IO\Data\FileType;
+use phpseclib\Crypt\RSA;
 use phpseclib\Net\SFTP as SFTPClient;
 
 class SFTP extends Base
@@ -12,13 +14,34 @@ class SFTP extends Base
     /** @var  \phpseclib\Net\SFTP */
     private $sftpClient;
 
-    public function __construct(string $host, string $username, string $password, int $port = 22)
+    public function __construct(string $host, int $port = 22)
     {
         $this->host = $host;
+        $this->port = $port;
+    }
+
+    public function loginWithPassword(string $username, string $password = null)
+    {
         $this->username = $username;
         $this->password = $password;
-        $this->port = $port;
+        //TODO: lazy connection
+        $this->initClient();
+    }
 
+    public function loginWithKey(string $username, string $keyFilePath, string $keyFilePassword = null)
+    {
+        if (!\file_exists($keyFilePath)) {
+            throw new \Exception('Key file does not exist');
+        }
+        $key = new RSA();
+        if (!\is_null($keyFilePassword)) {
+            $key->setPassword($keyFilePassword);
+        }
+        $key->loadKey(\file_get_contents($keyFilePath));
+
+        $this->username = $username;
+        $this->password = $key;
+        //TODO: lazy connection
         $this->initClient();
     }
 
@@ -35,37 +58,67 @@ class SFTP extends Base
 
     public function push(string $local, string $remote)
     {
-        $this->sftpClient->put($remote, $local, SFTPClient::SOURCE_LOCAL_FILE);
+
+        if (!\file_exists($local)) {
+            throw new \Exception('Unable to push, local file does not exist');
+        }
+        //Create directory
+
+        $directory = dirname($remote);
+
+        $this->sftpClient->mkdir($directory, -1, true);
+
+        $res = $this->sftpClient->put($remote, $local, SFTPClient::SOURCE_LOCAL_FILE);
+//        $res = $this->sftpClient->put($remote, $local, SFTPClient::SOURCE_LOCAL_FILE, -1, -1, function ($sftp_packet_size) {
+//            echo 'X: ' . $sftp_packet_size . \PHP_EOL;
+//
+//        });
+//        var_dump($res);
+
     }
 
     public function getRemoteFileStat(string $remote): FileStat
     {
-        $bytes = intval($this->sftpClient->filesize($remote));
-        $changedate = intval($this->sftpClient->filemtime($remote));
-        $sftpType = $this->sftpClient->filetype($remote);
-        $type = $this->parseSFTPTypeToFileType($sftpType);
 
-        //TODO: separate when only 1 of the stats is needed
-        //TODO: try  $this->sftpClient->stat()
+        $sftpType = $this->sftpClient->filetype($remote);
+
         $stat = new FileStat($remote);
-        $stat->setBytes($bytes);
-        $stat->setChangeDate($changedate);
-        $stat->setType($type);
+        if ($sftpType) {
+            $type = $this->parseSFTPTypeToFileType($sftpType);
+
+            //TODO: separate when only 1 of the stats is needed
+            //TODO: try  $this->sftpClient->stat()
+
+            $bytes = intval($this->sftpClient->filesize($remote));
+            $changedate = intval($this->sftpClient->filemtime($remote));
+
+            $stat->setBytes($bytes);
+            $stat->setChangeDate($changedate);
+            $stat->setType($type);
+
+        } else {
+            $stat->setExists(false);
+        }
 
         return $stat;
+
     }
 
     private function parseSFTPTypeToFileType(string $sftpType): FileType
     {
-        $parsedtype = FileType::Unknown();
+        $parsedType = FileType::Unknown();
         switch ($sftpType) {
-            case '':
+            case 'file':
+                $parsedType = FileType::File();
+                break;
+            case 'dir':
+                $parsedType = FileType::Dir();
                 break;
             default:
                 throw new \Exception('Unknown SFTP file type "' . $sftpType . '"');
         }
 
-        return $parsedtype;
+        return $parsedType;
     }
 
     public function delete(string $remote)
