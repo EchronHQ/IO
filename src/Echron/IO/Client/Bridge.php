@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
+
 namespace Echron\IO\Client;
 
 use Echron\IO\Data\FileStat;
@@ -24,7 +25,7 @@ class Bridge extends Base
         return $this->slave;
     }
 
-    public function push(string $masterPath, string $slavePath)
+    public function push(string $masterPath, string $slavePath): bool
     {
         $tmpLocalPath = $this->getTempFilename();
 
@@ -32,6 +33,8 @@ class Bridge extends Base
         $this->slave->push($tmpLocalPath, $slavePath);
 
         $this->removeLocal($tmpLocalPath);
+
+        return true;
 
     }
 

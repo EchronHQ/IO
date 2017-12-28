@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
+
 namespace Echron\IO\Data;
 
 class FileStat
@@ -76,5 +77,18 @@ class FileStat
     public function getBytes(): int
     {
         return $this->bytes;
+    }
+
+    public function debug(): string
+    {
+        $output = [];
+        if ($this->changeDate !== -1) {
+            $output[] = 'Changedate: ' . date("Y-m-d H:i:s", $this->changeDate);
+        } else {
+            $output[] = 'Changedate: unknown';
+        }
+        $output[] = 'Exists: ' . ($this->exists ? 'Y' : 'N');
+
+        return \implode(' - ', $output);
     }
 }

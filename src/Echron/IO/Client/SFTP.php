@@ -56,7 +56,7 @@ class SFTP extends Base
         }
     }
 
-    public function push(string $local, string $remote)
+    public function push(string $local, string $remote): bool
     {
 
         if (!\file_exists($local)) {
@@ -69,6 +69,9 @@ class SFTP extends Base
         $this->sftpClient->mkdir($directory, -1, true);
 
         $res = $this->sftpClient->put($remote, $local, SFTPClient::SOURCE_LOCAL_FILE);
+
+        return true;
+
 //        $res = $this->sftpClient->put($remote, $local, SFTPClient::SOURCE_LOCAL_FILE, -1, -1, function ($sftp_packet_size) {
 //            echo 'X: ' . $sftp_packet_size . \PHP_EOL;
 //
@@ -92,6 +95,7 @@ class SFTP extends Base
             $bytes = intval($this->sftpClient->filesize($remote));
             $changedate = intval($this->sftpClient->filemtime($remote));
 
+//            $stat->setExists(true);
             $stat->setBytes($bytes);
             $stat->setChangeDate($changedate);
             $stat->setType($type);

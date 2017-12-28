@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
+
 namespace Echron\IO\Client;
 
 use Echron\IO\Data\FileStat;
@@ -20,7 +21,7 @@ class Http extends Base
         $response = $this->guzzleClient->get($remote, $options);
         $fileContent = $response->getBody();
         file_put_contents($local, $fileContent);
-       
+
     }
 
     public function push(string $local, string $remote)
@@ -42,6 +43,8 @@ class Http extends Base
 
             switch ($fileHeadResponse->getStatusCode()) {
                 case 200:
+
+                    $stat->setExists(true);
 
                     if ($fileHeadResponse->hasHeader('Last-Modified')) {
                         $lastModified = $fileHeadResponse->getHeaderLine('Last-Modified');
