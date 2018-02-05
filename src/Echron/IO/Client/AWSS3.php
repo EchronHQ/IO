@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
+
 namespace Echron\IO\Client;
 
 use Aws\S3\Exception\S3Exception;
@@ -7,7 +8,6 @@ use Aws\S3\S3Client;
 use Echron\IO\Data\FileStat;
 use Echron\IO\Data\FileStatCollection;
 use GuzzleHttp\Psr7\Stream;
-use phpseclib\Net\SFTP as SFTPClient;
 
 /**
  * http://docs.aws.amazon.com/aws-sdk-php/v3/guide/getting-started/basic-usage.html
@@ -25,7 +25,6 @@ class AWSS3 extends Base
             'region'      => $this->region,
             'credentials' => $credentials,
         ]);
-
     }
 
     public function push(string $local, string $remote)
@@ -41,7 +40,6 @@ class AWSS3 extends Base
 
     public function createBucket(string $bucket)
     {
-
         $result = $this->s3Client->createBucket([
             'Bucket' => $bucket,
         ]);
@@ -50,7 +48,6 @@ class AWSS3 extends Base
 
     public function clearBucket(string $bucket)
     {
-
         $objects = $this->listContent($bucket);
 
         foreach ($objects as $object) {
@@ -82,7 +79,6 @@ class AWSS3 extends Base
         if ($result->hasKey('Contents')) {
             $objects = $result->get('Contents');
             if ($objects !== null) {
-
                 foreach ($objects as $object) {
                     $collection->add($this->objectInfoToFileStat($object));
                 }
@@ -94,12 +90,12 @@ class AWSS3 extends Base
 
     private function objectInfoToFileStat(array $info): FileStat
     {
-
         if (!isset($info['Key'])) {
             throw new \Exception('Unable to parse object info to stat, key property not found');
         }
 
         $fileStat = new FileStat($info['Key']);
+        $fileStat->setExists(true);
         if (isset($info['LastModified'])) {
             /** @var \Aws\Api\DateTimeResult $lastModified */
             $lastModified = $info['LastModified'];
@@ -171,7 +167,6 @@ class AWSS3 extends Base
         }
 
         return $fileStat;
-
     }
 
     public function remoteFileExists(string $remote): bool
@@ -194,7 +189,6 @@ class AWSS3 extends Base
                 file_put_contents($local, $content);
             }
         }
-
     }
 
 }

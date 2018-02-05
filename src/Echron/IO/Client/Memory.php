@@ -24,6 +24,7 @@ class Memory extends Base
         $localFileStat = $this->getLocalFileStat($local);
 
         $fileStat = new FileStat($remote);
+        $fileStat->setExists(true);
         $fileStat->setBytes($localFileStat->getBytes());
         $fileStat->setChangeDate($localFileStat->getChangeDate());
         $fileStat->setType($localFileStat->getType());

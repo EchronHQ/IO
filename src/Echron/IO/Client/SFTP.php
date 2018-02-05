@@ -52,13 +52,11 @@ class SFTP extends Base
         if (!$authenticated) {
             $this->sftpClient = null;
             throw new \Exception('Unable to login: not authenticated 2 `' . $this->username . '@' . $this->host . ':' . $this->port . '`');
-
         }
     }
 
     public function push(string $local, string $remote): bool
     {
-
         if (!\file_exists($local)) {
             throw new \Exception('Unable to push, local file does not exist');
         }
@@ -82,7 +80,6 @@ class SFTP extends Base
 
     public function getRemoteFileStat(string $remote): FileStat
     {
-
         $sftpType = $this->sftpClient->filetype($remote);
 
         $stat = new FileStat($remote);
@@ -95,17 +92,15 @@ class SFTP extends Base
             $bytes = intval($this->sftpClient->filesize($remote));
             $changedate = intval($this->sftpClient->filemtime($remote));
 
-//            $stat->setExists(true);
+            $stat->setExists(true);
             $stat->setBytes($bytes);
             $stat->setChangeDate($changedate);
             $stat->setType($type);
-
         } else {
             $stat->setExists(false);
         }
 
         return $stat;
-
     }
 
     private function parseSFTPTypeToFileType(string $sftpType): FileType
