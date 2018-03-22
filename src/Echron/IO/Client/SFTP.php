@@ -47,6 +47,14 @@ class SFTP extends Base
 
     private function initClient()
     {
+        $this->connectClient();
+    }
+
+    private function connectClient()
+    {
+        if (!\is_null($this->sftpClient)) {
+            $this->sftpClient->disconnect();
+        }
         $this->sftpClient = new SFTPClient($this->host, $this->port, $this->timeout);
         $authenticated = $this->sftpClient->login($this->username, $this->password);
         if (!$authenticated) {
@@ -60,15 +68,21 @@ class SFTP extends Base
         if (!\file_exists($local)) {
             throw new \Exception('Unable to push, local file does not exist');
         }
+
+        if (!$this->sftpClient->isConnected()) {
+            $this->connectClient();
+        }
         //Create directory
 
         $directory = dirname($remote);
 
-        $this->sftpClient->mkdir($directory, -1, true);
+//        var_dump($this->sftpClient->pwd() . ' ' . $directory);
+        $dirCreated = $this->sftpClient->mkdir($directory, -1, true);
 
+//        var_dump($dirCreated);
         $res = $this->sftpClient->put($remote, $local, SFTPClient::SOURCE_LOCAL_FILE);
 
-        return true;
+        return $res;
 
 //        $res = $this->sftpClient->put($remote, $local, SFTPClient::SOURCE_LOCAL_FILE, -1, -1, function ($sftp_packet_size) {
 //            echo 'X: ' . $sftp_packet_size . \PHP_EOL;
@@ -80,6 +94,9 @@ class SFTP extends Base
 
     public function getRemoteFileStat(string $remote): FileStat
     {
+        if (!$this->sftpClient->isConnected()) {
+            $this->connectClient();
+        }
         $sftpType = $this->sftpClient->filetype($remote);
 
         $stat = new FileStat($remote);
@@ -105,6 +122,9 @@ class SFTP extends Base
 
     private function parseSFTPTypeToFileType(string $sftpType): FileType
     {
+        if (!$this->sftpClient->isConnected()) {
+            $this->connectClient();
+        }
         $parsedType = FileType::Unknown();
         switch ($sftpType) {
             case 'file':
@@ -122,21 +142,42 @@ class SFTP extends Base
 
     public function delete(string $remote)
     {
+        if (!$this->sftpClient->isConnected()) {
+            $this->connectClient();
+        }
         $this->sftpClient->delete($remote);
     }
 
     public function remoteFileExists(string $remote): bool
     {
+        if (!$this->sftpClient->isConnected()) {
+            $this->connectClient();
+        }
+
         return $this->sftpClient->file_exists($remote);
     }
 
     public function pull(string $remote, string $local)
     {
-        return $this->sftpClient->get($remote, $local);
+        if (!$this->sftpClient->isConnected()) {
+            $this->connectClient();
+        }
+
+        $downloaded = $this->sftpClient->get($remote, $local);
+
+//        if (!$downloaded) {
+//            var_dump($remote . ' => ' . $local);
+//        }
+
+        return $downloaded;
     }
 
     public function setRemoteChangeDate(string $remote, int $changeDate)
     {
+        if (!$this->sftpClient->isConnected()) {
+            $this->connectClient();
+        }
+
         return $this->sftpClient->touch($remote, $changeDate);
     }
 }
