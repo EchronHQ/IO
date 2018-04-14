@@ -10,14 +10,37 @@ class Http extends Base
 {
     private $guzzleClient;
 
+    private $basicAuth;
+
     public function __construct()
     {
         $this->guzzleClient = new GuzzleClient();
     }
 
+    public function setBasicAuth(string $username, string $password)
+    {
+        $this->basicAuth = [
+            $username,
+            $password,
+        ];
+    }
+
     public function pull(string $remote, string $local)
     {
         $options = [];
+        if (!\is_null($this->basicAuth)) {
+            $options['auth'] = $this->basicAuth;
+        }
+
+        //Progress
+//        $options['progress'] = function ($dl_total_size, $dl_size_so_far, $ul_total_size, $ul_size_so_far) {
+//            if ($dl_total_size !== 0) {
+//                $procent = (string)number_format($dl_size_so_far / $dl_total_size * 100, 2);
+//
+//                echo \str_pad($procent, 6, ' ', \STR_PAD_LEFT) . '%' . \PHP_EOL;
+//            }
+//        };
+
         $response = $this->guzzleClient->get($remote, $options);
         $fileContent = $response->getBody();
         file_put_contents($local, $fileContent);
@@ -39,7 +62,12 @@ class Http extends Base
         $stat = new FileStat($remote);
 
         try {
-            $fileHeadResponse = $this->guzzleClient->head($remote, []);
+            $options = [];
+            if (!\is_null($this->basicAuth)) {
+                $options ['auth'] = $this->basicAuth;
+            }
+
+            $fileHeadResponse = $this->guzzleClient->head($remote, $options);
 
             switch ($fileHeadResponse->getStatusCode()) {
                 case 200:
@@ -67,9 +95,14 @@ class Http extends Base
                 case 401:
                 case 404:
                     break;
+                default:
+                    $this->logger->warning('Unknown status code "' . $fileHeadResponse->getStatusCode() . '"');
+                    break;
             }
         } catch (\Exception $ex) {
-
+            if ($this->logger) {
+                $this->logger->error('Error while getting remote file stat: ' . $ex);
+            }
         }
 
         return $stat;
@@ -77,7 +110,9 @@ class Http extends Base
 
     public function remoteFileExists(string $remote): bool
     {
-        throw new \Exception('Not implemented');
+        $remoteFileStat = $this->getRemoteFileStat($remote);
+
+        return $remoteFileStat->getExists();
     }
 
     public function setRemoteChangeDate(string $remote, int $changeDate)
