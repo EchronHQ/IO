@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
+
 namespace Echron\IO\Client;
 
 use Echron\IO\Data\FileStat;
@@ -14,7 +15,17 @@ class Bridge extends Base
         $this->slave = $slave;
     }
 
-    public function push(string $masterPath, string $slavePath)
+    public function getMaster(): Base
+    {
+        return $this->master;
+    }
+
+    public function getSlave(): Base
+    {
+        return $this->slave;
+    }
+
+    public function push(string $masterPath, string $slavePath): bool
     {
         $tmpLocalPath = $this->getTempFilename();
 
@@ -22,6 +33,8 @@ class Bridge extends Base
         $this->slave->push($tmpLocalPath, $slavePath);
 
         $this->removeLocal($tmpLocalPath);
+
+        return true;
 
     }
 
@@ -71,14 +84,14 @@ class Bridge extends Base
         return $this->master->getRemoteFileStat($masterPath);
     }
 
-    public function moveRemoteFile(string $remoteSource, string $remoteDestination)
-    {
-        throw new \Exception('Not implemented');
-    }
-
     public function delete(string $remote)
     {
         return $this->slave->delete($remote);
+    }
+
+    public function moveRemoteFile(string $remoteSource, string $remoteDestination)
+    {
+        throw new \Exception('Not implemented');
     }
 
     public function getRemotePath(string $remotePath): string

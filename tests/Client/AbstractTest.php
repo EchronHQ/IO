@@ -1,84 +1,150 @@
 <?php
 declare(strict_types = 1);
 
-class AbstractTest extends PHPUnit_Framework_TestCase
+abstract class AbstractTest extends PHPUnit_Framework_TestCase
 {
-    private $existingTestFile;
-    private $nonExistingTestFile = 'notexistingtest.txt';
-    private $changeDate = 0;
 
-    public function testLocalGetFileSize_FileExist()
+    public function testPushFile()
     {
+        $client = $this->getClient();
 
-        $this->assertFileExists($this->existingTestFile);
+        $localTestFile1 = tempnam(sys_get_temp_dir(), 'io_test');
+        $localTestFileContent1 = 'ThisIsATestFile' . uniqid();
 
-        $client = new \Echron\IO\Client\Http();
-        $size = $client->getLocalSize($this->existingTestFile);
+        file_put_contents($localTestFile1, $localTestFileContent1);
 
-        $this->assertEquals(15, $size);
-    }
+        $fileStat = $client->getLocalFileStat($localTestFile1);
+        $remoteLocation = $this->getRemoteTestFilePath();
 
-//TODO: create test file when building test
+        $this->assertFalse($client->remoteFileExists($remoteLocation));
 
-    public function testLocalGetFileSize_FileDoesNotExist()
-    {
+        $client->push($localTestFile1, $remoteLocation);
+        //TODO: test if file exist on Dropbox storage
 
-        $this->assertFileNotExists($this->nonExistingTestFile);
-
-        $client = new \Echron\IO\Client\Http();
-        $size = $client->getRemoteSize($this->nonExistingTestFile);
-
-        $this->assertEquals(-1, $size);
-    }
-
-    public function testLocalGetFileChangeDate_FileExist()
-    {
-
-        $this->assertFileExists($this->existingTestFile);
-
-        $client = new \Echron\IO\Client\Http();
-        $size = $client->getLocalChangeDate($this->existingTestFile);
-
-        $this->assertEquals($this->changeDate, $size);
-    }
-
-    public function testLocalGetFileChangeDate_FileDoesNotExist()
-    {
-
-        $this->assertFileNotExists($this->nonExistingTestFile);
-
-        $client = new \Echron\IO\Client\Http();
-        $size = $client->getLocalChangeDate($this->nonExistingTestFile);
-
-        $this->assertEquals(-1, $size);
-    }
-
-    protected function setUp()
-    {
-        parent::setUp();
-        $this->removeTestFiles();
-
-        $this->changeDate = date('U');
-
-        $this->existingTestFile = tempnam(sys_get_temp_dir(), 'io_test');
-        file_put_contents($this->existingTestFile, 'ThisIsATestFile');
+        $this->assertExistsOnRemoteAndEquals($client, $remoteLocation, $fileStat, $localTestFileContent1);
 
     }
 
-    private function removeTestFiles()
+    abstract protected function getClient(): \Echron\IO\Client\Base;
+
+    abstract protected function getRemoteTestFilePath(): string;
+
+    protected function assertExistsOnRemoteAndEquals(\Echron\IO\Client\Base $client, string $remote, \Echron\IO\Data\FileStat $fileStat, string $content)
     {
-        if ($this->existingTestFile !== null && file_exists($this->existingTestFile)) {
-            unlink($this->existingTestFile);
-        }
-        if ($this->nonExistingTestFile !== null && file_exists($this->nonExistingTestFile)) {
-            unlink($this->nonExistingTestFile);
-        }
+        $local = tempnam(sys_get_temp_dir(), 'io_test');
+
+        $this->assertTrue($client->remoteFileExists($remote));
+
+        $remoteFileStat = $client->getRemoteFileStat($remote);
+
+        $this->assertEquals($fileStat->getBytes(), $remoteFileStat->getBytes(), 'Size should be the same');
+        $this->assertEquals($fileStat->getChangeDate(), $remoteFileStat->getChangeDate(), 'Changedate should be the smae');
+
+        //$this->assertTrue($fileStat->equals($remoteFileStat));
+
+        $client->pull($remote, $local);
+        $this->assertFileExists($local, 'File should exist');
+        $fileContent = file_get_contents($local);
+        $this->assertEquals($content, $fileContent, 'Content should be the same');
+
     }
 
-    protected function tearDown()
-    {
-        parent::tearDown();
+//    public function testPullFile()
+//    {
+//        $client = $this->getClient();
+//
+//        $localTestFile1 = tempnam(sys_get_temp_dir(), 'io_test');
+//        $localTestFileContent1 = 'ThisIsATestFile' . uniqid();
+//
+//        file_put_contents($localTestFile1, $localTestFileContent1);
+//
+//        $remoteLocation = $this->getRemoteTestFilePath();
+//
+//        $client->push($localTestFile1, $remoteLocation);
+//
+//        $newLocalLocation = tempnam(sys_get_temp_dir(), 'io_test');
+//
+//        $client->pull($remoteLocation, $newLocalLocation);
+//
+//    }
 
-        $this->removeTestFiles();
+    public function testPull()
+    {
+        $client = $this->getClient();
+
+        $localTestFile = tempnam(sys_get_temp_dir(), 'io_test');
+        $localTestFileContent = 'ThisIsATestFile' . uniqid();
+
+        file_put_contents($localTestFile, $localTestFileContent);
+
+        $remoteLocation = $this->getRemoteTestFilePath();
+
+        $localFileStat = $client->getLocalFileStat($localTestFile);
+        $client->push($localTestFile, $remoteLocation);
+
+        //Start test
+
+        $newLocalTestFile = tempnam(sys_get_temp_dir(), 'io_test');
+
+        $this->assertNotEquals($localTestFile, $newLocalTestFile);
+
+        $client->pull($remoteLocation, $newLocalTestFile);
+
+        $this->assertFileExists($newLocalTestFile);
+        $newLocalFileStat = $client->getLocalFileStat($newLocalTestFile);
+
+        $this->assertTrue($localFileStat->equals($newLocalFileStat));
+
+        $newLocalFileContent = file_get_contents($newLocalTestFile);
+        $this->assertEquals($localTestFileContent, $newLocalFileContent);
+
     }
+
+    public function testFileExist_Exists()
+    {
+        $client = $this->getClient();
+
+        $localTestFile1 = tempnam(sys_get_temp_dir(), 'io_test');
+        $localTestFileContent1 = 'ThisIsATestFile' . uniqid();
+
+        file_put_contents($localTestFile1, $localTestFileContent1);
+
+        $remoteLocation = $this->getRemoteTestFilePath();
+
+        $client->push($localTestFile1, $remoteLocation);
+
+        $this->assertTrue($client->remoteFileExists($remoteLocation));
+
+    }
+
+    public function testFileExist_DoesNotExists()
+    {
+        $client = $this->getClient();
+
+        $remoteLocation = $this->getRemoteTestFilePath();
+        $client->delete($remoteLocation);
+        $this->assertFalse($client->remoteFileExists($remoteLocation));
+
+    }
+
+    public function testDelete_Existing()
+    {
+        $client = $this->getClient();
+        $localTestFile = tempnam(sys_get_temp_dir(), 'io_test');
+        $localTestFileContent = 'ThisIsATestFile' . uniqid();
+
+        file_put_contents($localTestFile, $localTestFileContent);
+
+        $remoteTestLocation = $this->getRemoteTestFilePath();
+
+        $client->push($localTestFile, $remoteTestLocation);
+
+        $this->assertTrue($client->remoteFileExists($remoteTestLocation));
+
+        $client->delete($remoteTestLocation);
+
+        $this->assertFalse($client->remoteFileExists($remoteTestLocation));
+    }
+
+    abstract protected function getRemoteTestFileContent(): string;
 }

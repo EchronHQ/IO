@@ -1,96 +1,76 @@
 <?php
 declare(strict_types = 1);
+require_once 'AbstractTest.php';
 
-class MemoryTest extends PHPUnit_Framework_TestCase
+class MemoryTest extends AbstractTest
 {
-    public function testPush()
+
+
+//
+//    public function testPull()
+//    {
+//        $client = new \Echron\IO\Client\Memory();
+//
+//        $localTestFile = tempnam(sys_get_temp_dir(), 'io_test');
+//        $localTestFileContent = 'ThisIsATestFile' . uniqid();
+//
+//        file_put_contents($localTestFile, $localTestFileContent);
+//
+//        $remoteTestLocation = 'root/test';
+//
+//        $localFileStat = $client->getLocalFileStat($localTestFile);
+//        $client->push($localTestFile, $remoteTestLocation);
+//
+//        //Start test
+//
+//        $newLocalTestFile = tempnam(sys_get_temp_dir(), 'io_test');
+//
+//        $this->assertNotEquals($localTestFile, $newLocalTestFile);
+//
+//        $client->pull($remoteTestLocation, $newLocalTestFile);
+//
+//        $this->assertFileExists($newLocalTestFile);
+//        $newLocalFileStat = $client->getLocalFileStat($newLocalTestFile);
+//
+//        $this->assertTrue($localFileStat->equals($newLocalFileStat));
+//
+//        $newLocalFileContent = file_get_contents($newLocalTestFile);
+//        $this->assertEquals($localTestFileContent, $newLocalFileContent);
+//
+//    }
+//
+//    public function testDelete_Existing()
+//    {
+//        $client = new \Echron\IO\Client\Memory();
+//
+//        $localTestFile = tempnam(sys_get_temp_dir(), 'io_test');
+//        $localTestFileContent = 'ThisIsATestFile' . uniqid();
+//
+//        file_put_contents($localTestFile, $localTestFileContent);
+//
+//        $remoteTestLocation = 'root/test';
+//
+//        $client->push($localTestFile, $remoteTestLocation);
+//
+//        $this->assertTrue($client->remoteFileExists($remoteTestLocation));
+//
+//        $client->delete($remoteTestLocation);
+//
+//        $this->assertFalse($client->remoteFileExists($remoteTestLocation));
+//    }
+
+    protected function getClient(): \Echron\IO\Client\Base
     {
-        $client = new \Echron\IO\Client\Memory();
-
-        $localTestFile = tempnam(sys_get_temp_dir(), 'io_test');
-        $localTestFileContent = 'ThisIsATestFile' . uniqid();
-
-        file_put_contents($localTestFile, $localTestFileContent);
-
-        $remoteTestLocation = 'root/test';
-
-        $fileStat = $client->getLocalFileStat($localTestFile);
-
-        $this->assertFileExists($localTestFile);
-        $this->assertFalse($client->remoteFileExists($remoteTestLocation));
-
-        $client->push($localTestFile, $remoteTestLocation);
-
-        $this->assertExistsOnRemoteAndEquals($client, $remoteTestLocation, $fileStat, $localTestFileContent);
-        $this->assertTrue($client->remoteFileExists($remoteTestLocation));
-
+        return new \Echron\IO\Client\Memory();
     }
 
-    private function assertExistsOnRemoteAndEquals(\Echron\IO\Client\Base $client, string $remote, \Echron\IO\Data\FileStat $fileStat, string $content)
+    protected function getRemoteTestFilePath(): string
     {
-        $local = tempnam(sys_get_temp_dir(), 'io_test');
-
-        //
-        $remoteFileStat = $client->getRemoteFileStat($remote);
-        $this->assertTrue($fileStat->equals($remoteFileStat));
-
-        $client->pull($remote, $local);
-        $this->assertFileExists($local);
-        $fileContent = file_get_contents($local);
-        $this->assertEquals($content, $fileContent);
-
+        return 'root/test';
     }
 
-    public function testPull()
+    protected function getRemoteTestFileContent(): string
     {
-        $client = new \Echron\IO\Client\Memory();
-
-        $localTestFile = tempnam(sys_get_temp_dir(), 'io_test');
-        $localTestFileContent = 'ThisIsATestFile' . uniqid();
-
-        file_put_contents($localTestFile, $localTestFileContent);
-
-        $remoteTestLocation = 'root/test';
-
-        $localFileStat = $client->getLocalFileStat($localTestFile);
-        $client->push($localTestFile, $remoteTestLocation);
-
-        //Start test
-
-        $newLocalTestFile = tempnam(sys_get_temp_dir(), 'io_test');
-
-        $this->assertNotEquals($localTestFile, $newLocalTestFile);
-
-        $client->pull($remoteTestLocation, $newLocalTestFile);
-
-        $this->assertFileExists($newLocalTestFile);
-        $newLocalFileStat = $client->getLocalFileStat($newLocalTestFile);
-
-        $this->assertTrue($localFileStat->equals($newLocalFileStat));
-
-        $newLocalFileContent = file_get_contents($newLocalTestFile);
-        $this->assertEquals($localTestFileContent, $newLocalFileContent);
-
+        // TODO: Implement getRemoteTestFileContent() method.
     }
-
-    public function testDelete_Existing()
-    {
-        $client = new \Echron\IO\Client\Memory();
-
-        $localTestFile = tempnam(sys_get_temp_dir(), 'io_test');
-        $localTestFileContent = 'ThisIsATestFile' . uniqid();
-
-        file_put_contents($localTestFile, $localTestFileContent);
-
-        $remoteTestLocation = 'root/test';
-
-        $client->push($localTestFile, $remoteTestLocation);
-
-        $this->assertTrue($client->remoteFileExists($remoteTestLocation));
-
-        $client->delete($remoteTestLocation);
-
-        $this->assertFalse($client->remoteFileExists($remoteTestLocation));
-    }
-
 }

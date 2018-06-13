@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
+
 namespace Echron\IO\Data;
 
 class FileStat
@@ -8,19 +9,23 @@ class FileStat
 
     public function __construct(string $path, FileType $type = null)
     {
+        if (empty(trim($path))) {
+            throw new \InvalidArgumentException('FileStat path cannot be empty');
+        }
         $this->path = $path;
+
         if (is_null($type)) {
             $type = FileType::Unknown();
         }
         $this->type = $type;
     }
 
-    public function setType(FileType $type)
+    public function setType(FileType $type): void
     {
         $this->type = $type;
     }
 
-    public function setExists(bool $exists)
+    public function setExists(bool $exists): void
     {
         $this->exists = $exists;
     }
@@ -30,12 +35,12 @@ class FileStat
         return $this->path;
     }
 
-    public function setBytes(int $bytes)
+    public function setBytes(int $bytes): void
     {
         $this->bytes = $bytes;
     }
 
-    public function setChangeDate(int $changeDate)
+    public function setChangeDate(int $changeDate): void
     {
         $this->changeDate = $changeDate;
     }
@@ -76,5 +81,18 @@ class FileStat
     public function getBytes(): int
     {
         return $this->bytes;
+    }
+
+    public function debug(): string
+    {
+        $output = [];
+        if ($this->changeDate !== -1) {
+            $output[] = 'Changedate: ' . date("Y-m-d H:i:s", $this->changeDate);
+        } else {
+            $output[] = 'Changedate: unknown';
+        }
+        $output[] = 'Exists: ' . ($this->exists ? 'Y' : 'N');
+
+        return \implode(' - ', $output);
     }
 }
