@@ -1,7 +1,7 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
-class GeneralTest extends PHPUnit_Framework_TestCase
+class GeneralTest extends \PHPUnit\Framework\TestCase
 {
     private $existingTestFile;
     private $nonExistingTestFile = 'notexistingtest.txt';
@@ -9,7 +9,6 @@ class GeneralTest extends PHPUnit_Framework_TestCase
 
     public function testLocalGetFileSize_FileExist()
     {
-
         $this->assertFileExists($this->existingTestFile);
 
         $client = new \Echron\IO\Client\Http();
@@ -22,7 +21,6 @@ class GeneralTest extends PHPUnit_Framework_TestCase
 
     public function testLocalGetFileSize_FileDoesNotExist()
     {
-
         $this->assertFileNotExists($this->nonExistingTestFile);
 
         $client = new \Echron\IO\Client\Http();
@@ -33,7 +31,6 @@ class GeneralTest extends PHPUnit_Framework_TestCase
 
     public function testLocalGetFileChangeDate_FileExist()
     {
-
         $this->assertFileExists($this->existingTestFile);
 
         $client = new \Echron\IO\Client\Http();
@@ -44,7 +41,6 @@ class GeneralTest extends PHPUnit_Framework_TestCase
 
     public function testLocalGetFileChangeDate_FileDoesNotExist()
     {
-
         $this->assertFileNotExists($this->nonExistingTestFile);
 
         $client = new \Echron\IO\Client\Http();
@@ -62,7 +58,6 @@ class GeneralTest extends PHPUnit_Framework_TestCase
 
         $this->existingTestFile = tempnam(sys_get_temp_dir(), 'io_test');
         file_put_contents($this->existingTestFile, 'ThisIsATestFile');
-
     }
 
     private function removeTestFiles()

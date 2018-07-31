@@ -1,7 +1,7 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
-abstract class AbstractTest extends PHPUnit_Framework_TestCase
+abstract class AbstractTest extends \PHPUnit\Framework\TestCase
 {
 
     public function testPushFile()
@@ -22,7 +22,6 @@ abstract class AbstractTest extends PHPUnit_Framework_TestCase
         //TODO: test if file exist on Dropbox storage
 
         $this->assertExistsOnRemoteAndEquals($client, $remoteLocation, $fileStat, $localTestFileContent1);
-
     }
 
     abstract protected function getClient(): \Echron\IO\Client\Base;
@@ -46,7 +45,6 @@ abstract class AbstractTest extends PHPUnit_Framework_TestCase
         $this->assertFileExists($local, 'File should exist');
         $fileContent = file_get_contents($local);
         $this->assertEquals($content, $fileContent, 'Content should be the same');
-
     }
 
 //    public function testPullFile()
@@ -97,7 +95,6 @@ abstract class AbstractTest extends PHPUnit_Framework_TestCase
 
         $newLocalFileContent = file_get_contents($newLocalTestFile);
         $this->assertEquals($localTestFileContent, $newLocalFileContent);
-
     }
 
     public function testFileExist_Exists()
@@ -114,7 +111,6 @@ abstract class AbstractTest extends PHPUnit_Framework_TestCase
         $client->push($localTestFile1, $remoteLocation);
 
         $this->assertTrue($client->remoteFileExists($remoteLocation));
-
     }
 
     public function testFileExist_DoesNotExists()
@@ -123,8 +119,11 @@ abstract class AbstractTest extends PHPUnit_Framework_TestCase
 
         $remoteLocation = $this->getRemoteTestFilePath();
         $client->delete($remoteLocation);
-        $this->assertFalse($client->remoteFileExists($remoteLocation));
 
+        $stat = $client->getRemoteFileStat($remoteLocation);
+        $this->assertFalse($stat->getExists());
+
+        $this->assertFalse($client->remoteFileExists($remoteLocation));
     }
 
     public function testDelete_Existing()

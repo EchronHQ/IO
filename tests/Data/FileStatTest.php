@@ -1,7 +1,7 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
-class FileStatTest extends PHPUnit_Framework_TestCase
+class FileStatTest extends \PHPUnit\Framework\TestCase
 {
     public function testEquals_SameObject()
     {
@@ -36,7 +36,6 @@ class FileStatTest extends PHPUnit_Framework_TestCase
 
         $this->assertFalse($stat1->equals($stat2));
         $this->assertFalse($stat2->equals($stat1));
-
     }
 
     public function testEquals_Different_ChangeDate()
