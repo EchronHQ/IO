@@ -13,12 +13,10 @@ class Cache extends Base
     public function __construct(CacheInterface $cache)
     {
         $this->cache = $cache;
-
     }
 
     public function push(string $local, string $remote): bool
     {
-
         $key = $this->formatName($remote);
         $statKey = $key . '_stat';
 
@@ -32,7 +30,6 @@ class Cache extends Base
         $this->setRemoteFileStat($remote, $stat);
 
         return true;
-
     }
 
     public function getRemoteFileStat(string $remote): FileStat
@@ -41,14 +38,16 @@ class Cache extends Base
         $statKey = $key . '_stat';
 
         if ($this->cache->has($statKey)) {
-            return $this->cache->get($statKey);
-        } else {
-            $stat = new FileStat($remote);
-            $stat->setExists(false);
+            $result = $this->cache->get($statKey);
 
-            return $stat;
+            if ($result instanceof FileStat) {
+                return $result;
+            }
         }
+        $stat = new FileStat($remote);
+        $stat->setExists(false);
 
+        return $stat;
     }
 
     public function remoteFileExists(string $remote): bool
@@ -66,7 +65,6 @@ class Cache extends Base
         $data = \base64_decode($data);
 
         \file_put_contents($local, $data);
-
     }
 
     public function delete(string $remote)
@@ -75,7 +73,6 @@ class Cache extends Base
         $statKey = $key . '_stat';
         $this->cache->delete($key);
         $this->cache->delete($statKey);
-
     }
 
     public function setRemoteChangeDate(string $remote, int $changeDate)
@@ -88,7 +85,6 @@ class Cache extends Base
         $stat->setChangeDate($changeDate);
 
         $this->setRemoteFileStat($remote, $stat);
-
         // TODO: Implement setRemoteChangeDate() method.
     }
 
@@ -102,8 +98,6 @@ class Cache extends Base
 
     private function formatName(string $input): string
     {
-
-
         return \sha1($input);
 
         return $input;
