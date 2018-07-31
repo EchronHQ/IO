@@ -6,7 +6,7 @@ class CacheTest extends AbstractTest
 {
     protected function getClient(): \Echron\IO\Client\Base
     {
-        $manager = new \MongoDB\Driver\Manager('mongodb://178.117.199.50');
+        $manager = new \MongoDB\Driver\Manager('mongodb://mongo-admin:UCGJbmQ25Kdx@174.138.6.248/?readPreference=nearest');
 
         $collection = new \MongoDB\Collection($manager, 'attlaz', 'test');
 
