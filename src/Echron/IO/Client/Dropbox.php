@@ -1,12 +1,12 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
+
 namespace Echron\IO\Client;
 
 use Echron\IO\Data\FileStat;
 use Echron\IO\Data\FileType;
 use Kunnu\Dropbox\DropboxApp;
 use Kunnu\Dropbox\DropboxFile;
-use phpseclib\Net\SFTP as SFTPClient;
 
 /**
  * https://github.com/kunalvarma05/dropbox-php-sdk/wiki/Usage
@@ -26,11 +26,11 @@ class Dropbox extends Base
         $dropboxApp = new DropboxApp($this->clientId, $this->clientSecret, $this->accessToken);
         $this->dropboxClient = new \Kunnu\Dropbox\Dropbox($dropboxApp);
 
-//        $authHelper = $this->dropboxClient->getAuthHelper();
+        $authHelper = $this->dropboxClient->getAuthHelper();
 //
-//        $callbackUrl = "https://echron.be/login-callback.php";
-//        $authUrl = $authHelper->getAuthUrl($callbackUrl);
-//        echo $authUrl;
+        $callbackUrl = "https://echron.be/login-callback.php";
+        $authUrl = $authHelper->getAuthUrl($callbackUrl);
+        echo $authUrl;
 
         // $authHelper->getAccessToken($code, $stat, $callbackUrl);
 
@@ -59,7 +59,6 @@ class Dropbox extends Base
 
     private function formatTime(int $time): string
     {
-
         return strftime('%Y-%m-%dT%H:%M:%SZ', $time);
     }
 
@@ -116,7 +115,6 @@ class Dropbox extends Base
         $file = $this->dropboxClient->download($remote);
         $contents = $file->getContents();
         file_put_contents($local, $contents);
-
     }
 
     public function setRemoteChangeDate(string $remote, int $changeDate)
