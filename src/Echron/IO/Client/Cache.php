@@ -20,6 +20,9 @@ class Cache extends Base
         $key = $this->formatName($remote);
         $statKey = $key . '_stat';
 
+        if (!\file_exists($local)) {
+            throw new \Exception('Unable to save file to cache: file "' . $local . '" doesn\'t exist');
+        }
         $data = \file_get_contents($local);
         $data = \base64_encode($data);
 
