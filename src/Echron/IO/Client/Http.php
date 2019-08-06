@@ -12,9 +12,9 @@ class Http extends Base
 
     private $basicAuth;
 
-    public function __construct()
+    public function __construct(array $guzzleClientConfig = [])
     {
-        $this->guzzleClient = new GuzzleClient();
+        $this->guzzleClient = new GuzzleClient($guzzleClientConfig);
     }
 
     public function setBasicAuth(string $username, string $password)
@@ -33,18 +33,17 @@ class Http extends Base
         }
 
         //Progress
-//        $options['progress'] = function ($dl_total_size, $dl_size_so_far, $ul_total_size, $ul_size_so_far) {
-//            if ($dl_total_size !== 0) {
-//                $procent = (string)number_format($dl_size_so_far / $dl_total_size * 100, 2);
-//
-//                echo \str_pad($procent, 6, ' ', \STR_PAD_LEFT) . '%' . \PHP_EOL;
-//            }
-//        };
+        //        $options['progress'] = function ($dl_total_size, $dl_size_so_far, $ul_total_size, $ul_size_so_far) {
+        //            if ($dl_total_size !== 0) {
+        //                $procent = (string)number_format($dl_size_so_far / $dl_total_size * 100, 2);
+        //
+        //                echo \str_pad($procent, 6, ' ', \STR_PAD_LEFT) . '%' . \PHP_EOL;
+        //            }
+        //        };
 
         $response = $this->guzzleClient->get($remote, $options);
         $fileContent = $response->getBody();
         file_put_contents($local, $fileContent);
-
     }
 
     public function push(string $local, string $remote)
