@@ -5,7 +5,10 @@ namespace Echron\IO\Client;
 
 use Echron\IO\Data\FileStat;
 use Echron\IO\Data\FileType;
+use Exception;
+use InvalidArgumentException;
 use League\Flysystem\Adapter\Ftp;
+use function is_null;
 
 class FtpClient extends Base
 {
@@ -17,8 +20,14 @@ class FtpClient extends Base
     /** @var Ftp */
     private $client;
 
-    public function __construct(string $host, string $username, string $password, int $port = 21, bool $passive = false, bool $autoConnect = false)
-    {
+    public function __construct(
+        string $host,
+        string $username,
+        string $password,
+        int $port = 21,
+        bool $passive = false,
+        bool $autoConnect = false
+    ) {
         $this->_host = $host;
         $this->_username = $username;
         $this->_password = $password;
@@ -62,7 +71,7 @@ class FtpClient extends Base
             if (is_string($port)) {
                 $port = intval($port);
                 if ($port === 0) {
-                    throw new \InvalidArgumentException('Port should be an integer');
+                    throw new InvalidArgumentException('Port should be an integer');
                 }
             }
         }
@@ -75,9 +84,14 @@ class FtpClient extends Base
         $this->client->getConnection();
     }
 
-    public function push(string $local, string $remote)
+    public function push(string $local, string $remote, int $setRemoteChangeDate = null)
     {
         // TODO: Implement push() method.
+        throw new Exception('Not implemented');
+        //        if (!\is_null($setRemoteChangeDate)) {
+        //            //TODO: can we set the remote change date when putting an object?
+        //            $this->setRemoteChangeDate($remote, $setRemoteChangeDate);
+        //        }
     }
 
     public function getRemoteFileStat(string $remote): FileStat
@@ -105,22 +119,30 @@ class FtpClient extends Base
     public function remoteFileExists(string $remote): bool
     {
         // TODO: Implement remoteFileExists() method.
+        throw new Exception('Not implemented');
     }
 
-    public function pull(string $remote, string $local)
+    public function pull(string $remote, string $local, int $localChangeDate = null)
     {
         $data = $this->client->read($remote);
 
-        \file_put_contents($local, $data['contents']);
+        $contents = $data['contents'];
+
+        $this->setLocalFileContent($local, $contents);
+        if (!is_null($localChangeDate)) {
+            $this->setLocalChangeDate($local, $localChangeDate);
+        }
     }
 
     public function delete(string $remote)
     {
         // TODO: Implement delete() method.
+        throw new Exception('Not implemented');
     }
 
     public function setRemoteChangeDate(string $remote, int $changeDate)
     {
         // TODO: Implement setRemoteChangeDate() method.
+        throw new Exception('Not implemented');
     }
 }

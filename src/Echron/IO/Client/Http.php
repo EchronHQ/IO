@@ -4,7 +4,9 @@ declare(strict_types=1);
 namespace Echron\IO\Client;
 
 use Echron\IO\Data\FileStat;
+use Exception;
 use GuzzleHttp\Client as GuzzleClient;
+use function is_null;
 
 class Http extends Base
 {
@@ -25,10 +27,10 @@ class Http extends Base
         ];
     }
 
-    public function pull(string $remote, string $local)
+    public function pull(string $remote, string $local, int $localChangeDate = null)
     {
         $options = [];
-        if (!\is_null($this->basicAuth)) {
+        if (!is_null($this->basicAuth)) {
             $options['auth'] = $this->basicAuth;
         }
 
@@ -41,19 +43,24 @@ class Http extends Base
         //            }
         //        };
 
-        $response = $this->guzzleClient->get($remote, $options);
-        $fileContent = $response->getBody();
-        file_put_contents($local, $fileContent);
+        $response = $this->guzzleClient->request('GET', $remote, $options);
+        $contents = $response->getBody()
+                             ->getContents();
+        $this->setLocalFileContent($local, $contents);
+
+        if (!is_null($localChangeDate)) {
+            $this->setLocalChangeDate($local, $localChangeDate);
+        }
     }
 
-    public function push(string $local, string $remote)
+    public function push(string $local, string $remote, int $setRemoteChangeDate = null)
     {
-        throw new \Exception('Not implemented');
+        throw new Exception('Not implemented');
     }
 
     public function delete(string $remote)
     {
-        throw new \Exception('Not implemented');
+        throw new Exception('Not implemented');
     }
 
     public function getRemoteFileStat(string $remote): FileStat
@@ -62,7 +69,7 @@ class Http extends Base
 
         try {
             $options = [];
-            if (!\is_null($this->basicAuth)) {
+            if (!is_null($this->basicAuth)) {
                 $options ['auth'] = $this->basicAuth;
             }
 
@@ -98,7 +105,7 @@ class Http extends Base
                     $this->logger->warning('Unknown status code "' . $fileHeadResponse->getStatusCode() . '"');
                     break;
             }
-        } catch (\Exception $ex) {
+        } catch (Exception $ex) {
             if ($this->logger) {
                 $this->logger->error('Error while getting remote file stat: ' . $ex);
             }
@@ -116,6 +123,6 @@ class Http extends Base
 
     public function setRemoteChangeDate(string $remote, int $changeDate)
     {
-        throw new \Exception('Not implemented');
+        throw new Exception('Not implemented');
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Echron\IO\Client;
 
 use Echron\IO\Data\FileStat;
+use Exception;
 
 class Bridge extends Base
 {
@@ -25,17 +26,16 @@ class Bridge extends Base
         return $this->slave;
     }
 
-    public function push(string $masterPath, string $slavePath): bool
+    public function push(string $masterPath, string $slavePath, int $setRemoteChangeDate = null): bool
     {
         $tmpLocalPath = $this->getTempFilename();
 
         $this->master->pull($masterPath, $tmpLocalPath);
-        $this->slave->push($tmpLocalPath, $slavePath);
+        $this->slave->push($tmpLocalPath, $slavePath, $setRemoteChangeDate);
 
         $this->removeLocal($tmpLocalPath);
 
         return true;
-
     }
 
     private function getTempFilename(): string
@@ -58,15 +58,14 @@ class Bridge extends Base
         return $this->slave->getRemoteChangeDate($remotePath);
     }
 
-    public function pull(string $slavePath, string $masterPath)
+    public function pull(string $slavePath, string $masterPath, int $localChangeDate = null)
     {
         $tmpLocalPath = $this->getTempFilename();
 
         $this->slave->pull($slavePath, $tmpLocalPath);
-        $this->master->push($tmpLocalPath, $masterPath);
+        $this->master->push($tmpLocalPath, $masterPath, $localChangeDate);
 
         $this->removeLocal($tmpLocalPath);
-
     }
 
     public function getRemoteFileStat(string $remote): FileStat
@@ -79,6 +78,7 @@ class Bridge extends Base
         return $this->slave->setRemoteChangeDate($slavePath, $date);
     }
 
+    /** @noinspection PhpMissingParentCallCommonInspection */
     public function getLocalFileStat(string $masterPath): FileStat
     {
         return $this->master->getRemoteFileStat($masterPath);
@@ -91,7 +91,7 @@ class Bridge extends Base
 
     public function moveRemoteFile(string $remoteSource, string $remoteDestination)
     {
-        throw new \Exception('Not implemented');
+        throw new Exception('Not implemented');
     }
 
     public function getRemotePath(string $remotePath): string

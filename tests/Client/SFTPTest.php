@@ -1,19 +1,21 @@
 <?php
 declare(strict_types=1);
 
-use Cache\Adapter\PHPArray\ArrayCachePool;
+use Echron\IO\Client\SFTP;
 
 require_once 'AbstractTest.php';
 
-class CacheTest extends AbstractTest
+class SFTPTest extends AbstractTest
 {
+
     protected function getClient(): \Echron\IO\Client\Base
     {
-        $pool = new ArrayCachePool();
+        $host = '';
+        $port = 22;
+        $client = new SFTP($host, $port);
+        $client->loginWithPassword('', '');
 
-        $cacheClient = new \Echron\IO\Client\Cache($pool);
-
-        return $cacheClient;
+        return $client;
     }
 
     protected function getRemoteTestFilePath(): string

@@ -3,14 +3,21 @@ declare(strict_types=1);
 
 namespace Echron\IO\Data;
 
+use InvalidArgumentException;
+use function implode;
+
 class FileStat
 {
-    private $path = '', $bytes = -1, $changeDate = -1, $exists = false, $type;
+    private $path = '';
+    private $bytes = -1;
+    private $changeDate = -1;
+    private $exists = false;
+    private $type;
 
     public function __construct(string $path, FileType $type = null)
     {
         if (empty(trim($path))) {
-            throw new \InvalidArgumentException('FileStat path cannot be empty');
+            throw new InvalidArgumentException('FileStat path cannot be empty');
         }
         $this->path = $path;
 
@@ -92,7 +99,14 @@ class FileStat
             $output[] = 'Changedate: unknown';
         }
         $output[] = 'Exists: ' . ($this->exists ? 'Y' : 'N');
+        $output[] = 'Type: ' . $this->type->getValue();
 
-        return \implode(' - ', $output);
+        if ($this->bytes !== -1) {
+            $output[] = 'Bytes: ' . $this->bytes;
+        } else {
+            $output[] = 'Bytes: unknown';
+        }
+
+        return implode(' - ', $output);
     }
 }

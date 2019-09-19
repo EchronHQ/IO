@@ -3,11 +3,17 @@ declare(strict_types=1);
 
 namespace Echron\IO\Client;
 
+use DateTime;
 use Echron\IO\Data\FileStat;
 use Echron\IO\Data\FileType;
 use Echron\Tools\FileSystem;
+use Exception;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
+use function file_exists;
+use function file_put_contents;
+use function in_array;
+use const PHP_EOL;
 
 abstract class Base implements LoggerAwareInterface
 {
@@ -15,7 +21,7 @@ abstract class Base implements LoggerAwareInterface
     /** @var  LoggerInterface */
     protected $logger;
 
-    abstract public function push(string $local, string $remote);
+    abstract public function push(string $local, string $remote, int $setRemoteChangeDate = null);
 
     public function getLocalSize(string $local): int
     {
@@ -23,8 +29,27 @@ abstract class Base implements LoggerAwareInterface
                     ->getBytes();
     }
 
+    private $localFileChanged = [];
+
+    public function setLocalFileContent(string $local, string $contents)
+    {
+        file_put_contents($local, $contents);
+
+        $this->localFileChanged[] = $local;
+    }
+
+    public function flushLocalStatCache(string $local = null)
+    {
+        clearstatcache(false, $local);
+    }
+
     public function getLocalFileStat(string $local): FileStat
     {
+        //TODO: we should not call this method every time we call this method
+        if (in_array($local, $this->localFileChanged)) {
+            $this->flushLocalStatCache($local);
+        }
+
         $stat = new FileStat($local);
         if (file_exists($local)) {
             $fileModificationTime = filemtime($local);
@@ -35,7 +60,6 @@ abstract class Base implements LoggerAwareInterface
             $stat->setBytes($fileSize);
             //TODO: determine file type
             $stat->setType(FileType::File());
-
         }
 
         return $stat;
@@ -63,23 +87,22 @@ abstract class Base implements LoggerAwareInterface
 
     public final function pullLazy(string $remote, string $local)
     {
-
         if (!$this->remoteFileExists($remote)) {
-            throw new \Exception('Unable to pull file: remote file `' . $remote . '` does not exist');
+            throw new Exception('Unable to pull file: remote file `' . $remote . '` does not exist');
         } else {
             $remoteFileStat = $this->getRemoteFileStat($remote);
             $localFileStat = $this->getLocalFileStat($local);
 
             //TODO: when datetime is different or only when remote file is newer?
             if (!$localFileStat->equals($remoteFileStat)) {
-                $downloaded = $this->pull($remote, $local);
-//                if ($downloaded) {
-                $this->setLocalChangeDate($local, $remoteFileStat->getChangeDate());
+                $downloaded = $this->pull($remote, $local, $remoteFileStat->getChangeDate());
+                //                if ($downloaded) {
+                //                $this->setLocalChangeDate($local, $remoteFileStat->getChangeDate());
 
                 return true;
-//                } else {
-//                    return false;
-//                }
+                //                } else {
+                //                    return false;
+                //                }
             } else {
                 return true;
             }
@@ -88,27 +111,27 @@ abstract class Base implements LoggerAwareInterface
 
     public final function pushLazy(string $local, string $remote)
     {
-        if (!\file_exists($local)) {
-            throw new \Exception('Unable to push file: local file `' . $local . '` does not exist');
+        if (!file_exists($local)) {
+            throw new Exception('Unable to push file: local file `' . $local . '` does not exist');
         } else {
             $remoteFileStat = $this->getRemoteFileStat($remote);
             $localFileStat = $this->getLocalFileStat($local);
 
-            echo 'Push lazy (' . $local . ' > ' . $remote . '):' . \PHP_EOL . "\t" . 'Local:  ' . $localFileStat->debug() . \PHP_EOL . "\t" . 'Remote: ' . $remoteFileStat->debug() . '' . \PHP_EOL;
+            echo 'Push lazy (' . $local . ' > ' . $remote . '):' . PHP_EOL . "\t" . 'Local:  ' . $localFileStat->debug() . PHP_EOL . "\t" . 'Remote: ' . $remoteFileStat->debug() . '' . PHP_EOL;
 
             //echo 'Lazy' . \PHP_EOL;
 
             if (!$remoteFileStat->equals($localFileStat)) {
-                echo "\t" . 'Upload needed' . \PHP_EOL;
-                $uploaded = $this->push($local, $remote);
-               // if ($uploaded) {
-                    echo "\t" . 'Set change date' . \PHP_EOL;
-                    $this->setRemoteChangeDate($remote, $localFileStat->getChangeDate());
+                echo "\t" . 'Upload needed' . PHP_EOL;
+                $uploaded = $this->push($local, $remote, $localFileStat->getChangeDate());
+                // if ($uploaded) {
+                //                    echo "\t" . 'Set change date' . \PHP_EOL;
+                //                    $this->setRemoteChangeDate($remote, $localFileStat->getChangeDate());
 
-                    return true;
-//                } else {
-//                    return false;
-//                }
+                return true;
+                //                } else {
+                //                    return false;
+                //                }
             } else {
                 return true;
             }
@@ -117,11 +140,11 @@ abstract class Base implements LoggerAwareInterface
 
     abstract public function remoteFileExists(string $remote): bool;
 
-    abstract public function pull(string $remote, string $local);
+    abstract public function pull(string $remote, string $local, int $localChangeDate = null);
 
     public function setLocalChangeDate(string $local, int $changeDate)
     {
-        FileSystem::touch($local, \DateTime::createFromFormat('U', (string)$changeDate));
+        FileSystem::touch($local, DateTime::createFromFormat('U', (string)$changeDate));
     }
 
     abstract public function delete(string $remote);

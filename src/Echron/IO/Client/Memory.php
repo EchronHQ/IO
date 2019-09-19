@@ -1,9 +1,11 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Echron\IO\Client;
 
 use Echron\IO\Data\FileStat;
+use Exception;
+use function is_null;
 
 class Memory extends Base
 {
@@ -14,7 +16,7 @@ class Memory extends Base
         $this->files = [];
     }
 
-    public function push(string $local, string $remote)
+    public function push(string $local, string $remote, int $setRemoteChangeDate = null)
     {
         //TODO: test if local exist
         $hashRemote = $this->hashFileName($remote);
@@ -26,7 +28,12 @@ class Memory extends Base
         $fileStat = new FileStat($remote);
         $fileStat->setExists(true);
         $fileStat->setBytes($localFileStat->getBytes());
-        $fileStat->setChangeDate($localFileStat->getChangeDate());
+        if (!is_null($setRemoteChangeDate)) {
+            $fileStat->setChangeDate($setRemoteChangeDate);
+        } else {
+            $fileStat->setChangeDate($this->getLocalChangeDate($local));
+        }
+
         $fileStat->setType($localFileStat->getType());
 
         $this->files[$hashRemote] = [
@@ -47,7 +54,7 @@ class Memory extends Base
         if (isset($this->files[$hashedName])) {
             return $this->files[$hashedName];
         }
-        throw new \Exception('File "' . $name . '" does not exist');
+        throw new Exception('File "' . $name . '" does not exist');
     }
 
     public function remoteFileExists(string $remote): bool
@@ -79,15 +86,18 @@ class Memory extends Base
         }
     }
 
-    public function pull(string $remote, string $local)
+    public function pull(string $remote, string $local, int $localChangeDate = null)
     {
         if ($this->remoteFileExists($remote)) {
             $file = $this->getFile($remote);
-            $data = $file['data'];
+            $contents = $file['data'];
 
-            file_put_contents($local, $data);
+            $this->setLocalFileContent($local, $contents);
+            if (!is_null($localChangeDate)) {
+                $this->setLocalChangeDate($local, $localChangeDate);
+            }
         } else {
-            throw new \Exception('Unable to pull file: remote "' . $remote . '" does not exist');
+            throw new Exception('Unable to pull file: remote "' . $remote . '" does not exist');
         }
     }
 
