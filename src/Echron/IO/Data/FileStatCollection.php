@@ -3,7 +3,10 @@ declare(strict_types = 1);
 
 namespace Echron\IO\Data;
 
-class FileStatCollection implements \Iterator, \Countable
+use Countable;
+use Iterator;
+
+class FileStatCollection implements Iterator, Countable
 {
     private $collection;
 

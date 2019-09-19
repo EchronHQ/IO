@@ -3,11 +3,15 @@ declare(strict_types=1);
 
 namespace Echron\IO\Client;
 
+use Aws\Api\DateTimeResult;
 use Aws\S3\Exception\S3Exception;
 use Aws\S3\S3Client;
 use Echron\IO\Data\FileStat;
 use Echron\IO\Data\FileStatCollection;
+use Exception;
 use GuzzleHttp\Psr7\Stream;
+use function class_exists;
+use function is_null;
 
 /**
  * http://docs.aws.amazon.com/aws-sdk-php/v3/guide/getting-started/basic-usage.html
@@ -18,6 +22,9 @@ class AWSS3 extends Base
 
     public function __construct(string $bucket, $credentials, string $region = 'eu-west-1')
     {
+        if (!class_exists('\Aws\S3\S3Client')) {
+            throw new Exception('aws/aws-sdk-php package not installed');
+        }
         $this->bucket = $bucket;
         //$provider = CredentialProvider::defaultProvider();
         $this->s3Client = new S3Client([
@@ -27,7 +34,7 @@ class AWSS3 extends Base
         ]);
     }
 
-    public function push(string $local, string $remote)
+    public function push(string $local, string $remote, int $setRemoteChangeDate = null)
     {
         $options = [
             'Bucket'     => $this->bucket,
@@ -36,6 +43,11 @@ class AWSS3 extends Base
             'Metadata'   => [],
         ];
         $this->s3Client->putObject($options);
+
+        if (!is_null($setRemoteChangeDate)) {
+            //TODO: can we set the remote change date when putting an object?
+            $this->setRemoteChangeDate($remote, $setRemoteChangeDate);
+        }
     }
 
     public function createBucket(string $bucket)
@@ -56,15 +68,15 @@ class AWSS3 extends Base
             // echo $object->getPath() . PHP_EOL;
         }
         //List objects in bucket
-//        $result = $this->s3Client->deleteObject([
-//            'Bucket'       => '<string>',
-//            // REQUIRED
-//            'Key'          => '<string>',
-//            // REQUIRED
-//            'MFA'          => '<string>',
-//            'RequestPayer' => 'requester',
-//            'VersionId'    => '<string>',
-//        ]);
+        //        $result = $this->s3Client->deleteObject([
+        //            'Bucket'       => '<string>',
+        //            // REQUIRED
+        //            'Key'          => '<string>',
+        //            // REQUIRED
+        //            'MFA'          => '<string>',
+        //            'RequestPayer' => 'requester',
+        //            'VersionId'    => '<string>',
+        //        ]);
 
     }
 
@@ -91,13 +103,13 @@ class AWSS3 extends Base
     private function objectInfoToFileStat(array $info): FileStat
     {
         if (!isset($info['Key'])) {
-            throw new \Exception('Unable to parse object info to stat, key property not found');
+            throw new Exception('Unable to parse object info to stat, key property not found');
         }
 
         $fileStat = new FileStat($info['Key']);
         $fileStat->setExists(true);
         if (isset($info['LastModified'])) {
-            /** @var \Aws\Api\DateTimeResult $lastModified */
+            /** @var DateTimeResult $lastModified */
             $lastModified = $info['LastModified'];
             $fileStat->setChangeDate($lastModified->getTimestamp());
         }
@@ -120,7 +132,7 @@ class AWSS3 extends Base
 
     public function setRemoteChangeDate(string $remote, int $changeDate)
     {
-        throw new \Exception('Not implemented');
+        throw new Exception('Not implemented');
     }
 
     public function deleteBucket(string $bucket)
@@ -152,7 +164,7 @@ class AWSS3 extends Base
             ]);
 
             if ($result->hasKey('LastModified')) {
-                /** @var \Aws\Api\DateTimeResult $lastModified */
+                /** @var DateTimeResult $lastModified */
                 $lastModified = $result->get('LastModified');
                 $fileStat->setChangeDate($lastModified->getTimestamp());
             }
@@ -175,18 +187,22 @@ class AWSS3 extends Base
                     ->getExists();
     }
 
-    public function pull(string $remote, string $local)
+    public function pull(string $remote, string $local, int $localChangeDate = null)
     {
         $result = $this->s3Client->getObject([
             'Bucket' => $this->bucket,
             'Key'    => $remote,
         ]);
-
+        //TODO: handle when object does not exist
         if ($result->hasKey('Body')) {
             $body = $result->get('Body');
             if ($body instanceof Stream) {
-                $content = $body->getContents();
-                file_put_contents($local, $content);
+                $contents = $body->getContents();
+                $this->setLocalFileContent($local, $contents);
+
+                if (!is_null($localChangeDate)) {
+                    $this->setLocalChangeDate($local, $localChangeDate);
+                }
             }
         }
     }
