@@ -23,8 +23,9 @@ class GoogleDrive extends Base
 {
 
     private $client, $service;
+    private $credentialsFilePath;
 
-    public function __construct(string $accessToken = null)
+    public function __construct(string $accessToken = null, string $credentialsFilePath = 'credentials.json')
     {
         if (!class_exists('\Google_Service_Drive')) {
             throw new Exception('google/apiclient package not installed');
@@ -33,6 +34,7 @@ class GoogleDrive extends Base
         if (!is_null($accessToken)) {
             $this->client->setAccessToken($accessToken);
         }
+        $this->credentialsFilePath = $credentialsFilePath;
         $this->service = new Google_Service_Drive($this->client);
     }
 
@@ -54,45 +56,23 @@ class GoogleDrive extends Base
 
     private function getClient()
     {
-        $p = 'echron_io.json';
-
         $client = new Google_Client();
         $client->setApplicationName('Echron IO lib');
         $client->setScopes([
             Google_Service_Drive::DRIVE_METADATA_READONLY,
             Google_Service_Drive::DRIVE,
         ]);
-        $client->setDeveloperKey('AIzaSyAkE4lWB9PzxEcqkfTNV_AIHeeQqlQzzX4');
+        //        $client->setDeveloperKey('AIzaSyAkE4lWB9PzxEcqkfTNV_AIHeeQqlQzzX4');
 
         //        $client->setAuthConfig('C:\Users\stijn\Documents\Dropbox\Projects\IO\Echron IO-776500f6e072.json');
         $client->setAccessType('offline');
         $client->setPrompt('select_account consent');
-        $client->setAuthConfig('credentials.json');
-        //  $client->setAccessToken('AIzaSyAkE4lWB9PzxEcqkfTNV_AIHeeQqlQzzX4');
 
-        //  Load previously authorized credentials from a file.
-        //        $credentialsPath = expandHomeDirectory($p);
-        //        if (file_exists($p)) {
-        //            echo 'file exists';
-        //            $accessToken = json_decode(file_get_contents($p), true);
-        //        } else {
-        //            //  Request authorization from the user.
-        //
-        //            if (false) {
-        //            } else {
-        //                // Exchange authorization code for an access token.
-        //
-        //                //                $this->setLocalFileContent($p, json_encode($accessToken));
-        //                //                printf("Credentials saved to %s\n", $p);
-        //            }
-        //        }
-        //        $client->setAccessToken($accessToken);
-        //
-        //        // Refresh the token if it's expired.
-        //        if ($client->isAccessTokenExpired()) {
-        //            $client->fetchAccessTokenWithRefreshToken($client->getRefreshToken());
-        //            file_put_contents($p, json_encode($client->getAccessToken()));
-        //        }
+        //if (\file_exists($credentialsFile)) {
+        $client->setAuthConfig($this->credentialsFilePath);
+
+        //}
+
         return $client;
     }
 
@@ -188,9 +168,6 @@ class GoogleDrive extends Base
             if (!is_null($localChangeDate)) {
                 $this->setLocalChangeDate($local, $localChangeDate);
             }
-            //die('---');
-
-            //var_dump($file);
         } catch (Google_Service_Exception $ex) {
             echo $ex->getMessage() . PHP_EOL;
         }
@@ -210,5 +187,10 @@ class GoogleDrive extends Base
     {
         // TODO: Implement setRemoteChangeDate() method.
         throw new Exception('Not implemented');
+    }
+
+    public function getService(): Google_Service_Drive
+    {
+        return $this->service;
     }
 }
