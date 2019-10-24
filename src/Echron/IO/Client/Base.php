@@ -13,7 +13,6 @@ use Psr\Log\LoggerInterface;
 use function file_exists;
 use function file_put_contents;
 use function in_array;
-use const PHP_EOL;
 
 abstract class Base implements LoggerAwareInterface
 {
@@ -117,12 +116,12 @@ abstract class Base implements LoggerAwareInterface
             $remoteFileStat = $this->getRemoteFileStat($remote);
             $localFileStat = $this->getLocalFileStat($local);
 
-            echo 'Push lazy (' . $local . ' > ' . $remote . '):' . PHP_EOL . "\t" . 'Local:  ' . $localFileStat->debug() . PHP_EOL . "\t" . 'Remote: ' . $remoteFileStat->debug() . '' . PHP_EOL;
+            //            echo 'Push lazy (' . $local . ' > ' . $remote . '):' . PHP_EOL . "\t" . 'Local:  ' . $localFileStat->debug() . PHP_EOL . "\t" . 'Remote: ' . $remoteFileStat->debug() . '' . PHP_EOL;
 
             //echo 'Lazy' . \PHP_EOL;
 
             if (!$remoteFileStat->equals($localFileStat)) {
-                echo "\t" . 'Upload needed' . PHP_EOL;
+                //                echo "\t" . 'Upload needed' . PHP_EOL;
                 $uploaded = $this->push($local, $remote, $localFileStat->getChangeDate());
                 // if ($uploaded) {
                 //                    echo "\t" . 'Set change date' . \PHP_EOL;
