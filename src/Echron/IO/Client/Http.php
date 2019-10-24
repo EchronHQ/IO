@@ -6,6 +6,7 @@ namespace Echron\IO\Client;
 use Echron\IO\Data\FileStat;
 use Exception;
 use GuzzleHttp\Client as GuzzleClient;
+use GuzzleHttp\ClientInterface;
 use function is_null;
 
 class Http extends Base
@@ -124,5 +125,10 @@ class Http extends Base
     public function setRemoteChangeDate(string $remote, int $changeDate)
     {
         throw new Exception('Not implemented');
+    }
+
+    public function getClient(): ClientInterface
+    {
+        return $this->guzzleClient;
     }
 }
