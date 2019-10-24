@@ -161,6 +161,7 @@ class SFTP extends Base
         if (!$this->sftpClient->isConnected()) {
             $this->connectClient();
         }
+        $this->sftpClient->use_stat_cache = false;
 
         return $this->sftpClient->file_exists($remote);
     }
@@ -173,9 +174,10 @@ class SFTP extends Base
 
         $downloaded = $this->sftpClient->get($remote, $local);
 
-        //        if (!$downloaded) {
-        //            var_dump($remote . ' => ' . $local);
-        //        }
+        if (!$downloaded) {
+            throw new Exception('Unable to pull remote file "' . $remote . '" (' . $this->sftpClient->getLastSFTPError() . ')');
+            //            var_dump($remote . ' => ' . $local);
+        }
 
         if (!is_null($localChangeDate)) {
             $this->setLocalChangeDate($local, $localChangeDate);
@@ -191,5 +193,10 @@ class SFTP extends Base
         }
 
         return $this->sftpClient->touch($remote, $changeDate);
+    }
+
+    public function getClient(): SFTPClient
+    {
+        return $this->sftpClient;
     }
 }
