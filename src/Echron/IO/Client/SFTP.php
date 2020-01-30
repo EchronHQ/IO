@@ -6,8 +6,8 @@ namespace Echron\IO\Client;
 use Echron\IO\Data\FileStat;
 use Echron\IO\Data\FileType;
 use Exception;
-use phpseclib\Crypt\RSA;
-use phpseclib\Net\SFTP as SFTPClient;
+use phpseclib3\Crypt\RSA;
+use phpseclib3\Net\SFTP as SFTPClient;
 use function file_exists;
 use function file_get_contents;
 use function is_null;
@@ -37,11 +37,12 @@ class SFTP extends Base
         if (!file_exists($keyFilePath)) {
             throw new Exception('Key file does not exist');
         }
-        $key = new RSA();
+
         if (!is_null($keyFilePassword)) {
-            $key->setPassword($keyFilePassword);
+            $key = RSA::load(file_get_contents($keyFilePath), $keyFilePassword);
+        } else {
+            $key = RSA::load(file_get_contents($keyFilePath), $keyFilePassword);
         }
-        $key->loadKey(file_get_contents($keyFilePath));
 
         $this->username = $username;
         $this->password = $key;
@@ -161,7 +162,8 @@ class SFTP extends Base
         if (!$this->sftpClient->isConnected()) {
             $this->connectClient();
         }
-        $this->sftpClient->use_stat_cache = false;
+
+        $this->sftpClient::disableStatCache();
 
         return $this->sftpClient->file_exists($remote);
     }
