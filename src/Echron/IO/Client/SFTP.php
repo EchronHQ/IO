@@ -162,9 +162,8 @@ class SFTP extends Base
         if (!$this->sftpClient->isConnected()) {
             $this->connectClient();
         }
-
-        $this->sftpClient::disableStatCache();
-
+        $this->sftpClient->disableStatCache();
+        
         return $this->sftpClient->file_exists($remote);
     }
 
