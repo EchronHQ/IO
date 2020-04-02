@@ -4,7 +4,9 @@ declare(strict_types=1);
 namespace Echron\IO\Client;
 
 use Echron\IO\Data\FileStat;
+use Echron\IO\Data\FileStatCollection;
 use Echron\IO\Data\FileType;
+use Echron\Tools\StringHelper;
 use Exception;
 use phpseclib3\Crypt\RSA;
 use phpseclib3\Net\SFTP as SFTPClient;
@@ -131,9 +133,9 @@ class SFTP extends Base
 
     private function parseSFTPTypeToFileType(string $sftpType): FileType
     {
-        if (!$this->sftpClient->isConnected()) {
-            $this->connectClient();
-        }
+        //        if (!$this->sftpClient->isConnected()) {
+        //            $this->connectClient();
+        //        }
         $parsedType = FileType::Unknown();
         switch ($sftpType) {
             case 'file':
@@ -163,7 +165,7 @@ class SFTP extends Base
             $this->connectClient();
         }
         $this->sftpClient->disableStatCache();
-        
+
         return $this->sftpClient->file_exists($remote);
     }
 
@@ -199,5 +201,70 @@ class SFTP extends Base
     public function getClient(): SFTPClient
     {
         return $this->sftpClient;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function list(string $remotePath): FileStatCollection
+    {
+        if (!$this->sftpClient->isConnected()) {
+            $this->connectClient();
+        }
+
+        $rawFiles = $this->sftpClient->rawlist($remotePath);
+
+        $result = new FileStatCollection();
+        foreach ($rawFiles as $rawFile) {
+            $fileStat = $this->rawFileToFileStat($rawFile, $remotePath);
+
+            if (!is_null($fileStat)) {
+                $result->add($fileStat);
+            }
+        }
+
+        return $result;
+    }
+
+    private function rawFileToFileStat(array $rawFile, string $remotePath): ?FileStat
+    {
+        if ($rawFile['filename'] === '.' || $rawFile['filename'] === '..') {
+            return null;
+        }
+        // TODO: is forward slash the correct path separator?
+        $pathSeparator = '/';
+        $path = $remotePath . $pathSeparator . $rawFile['filename'];
+
+        if (StringHelper::endsWith($remotePath, $pathSeparator)) {
+            $path = $remotePath . $rawFile['filename'];
+        }
+
+        $fileStat = new FileStat($path);
+
+        $rawType = $rawFile['type'];
+        $type = FileType::Unknown();
+        switch ($rawType) {
+            case 1:
+                $type = FileType::File();
+                break;
+            case 2:
+                $type = FileType::Dir();
+                break;
+            default:
+                echo 'Unknown file type ' . $rawType . \PHP_EOL;
+        }
+
+        //\var_dump($this->sftpClient->file_types);
+        // $type = $this->parseSFTPTypeToFileType($this->sftpClient->filetype($path));
+
+        $bytes = intval($rawFile['size']);
+        $changedate = intval($rawFile['mtime']);
+
+        $fileStat->setExists(true);
+        $fileStat->setBytes($bytes);
+        $fileStat->setChangeDate($changedate);
+        $fileStat->setType($type);
+
+        return $fileStat;
     }
 }

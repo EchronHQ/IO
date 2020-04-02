@@ -5,6 +5,7 @@ namespace Echron\IO\Client;
 
 use DateTime;
 use Echron\IO\Data\FileStat;
+use Echron\IO\Data\FileStatCollection;
 use Echron\IO\Data\FileType;
 use Echron\Tools\FileSystem;
 use Exception;
@@ -154,6 +155,12 @@ abstract class Base implements LoggerAwareInterface
     {
         return unlink($local);
     }
+
+    /**
+     * @param string $remotePath
+     * @return FileStatCollection
+     */
+    abstract public function list(string $remotePath): FileStatCollection;
 
     public function setLogger(LoggerInterface $logger)
     {

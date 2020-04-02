@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Echron\IO\Client;
 
 use Echron\IO\Data\FileStat;
+use Echron\IO\Data\FileStatCollection;
 use Echron\IO\Data\FileType;
 use Exception;
 use Kunnu\Dropbox\DropboxApp;
@@ -163,6 +164,14 @@ class Dropbox extends Base
     public function setRemoteChangeDate(string $remote, int $changeDate)
     {
         //TODO: how to implement?
+        throw new Exception('Not implemented');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function list(string $remotePath): FileStatCollection
+    {
         throw new Exception('Not implemented');
     }
 }

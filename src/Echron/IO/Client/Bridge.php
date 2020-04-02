@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Echron\IO\Client;
 
 use Echron\IO\Data\FileStat;
+use Echron\IO\Data\FileStatCollection;
 use Exception;
 
 class Bridge extends Base
@@ -112,5 +113,13 @@ class Bridge extends Base
     protected function _localFileExists(string $masterPath): bool
     {
         return $this->master->remoteFileExists($masterPath);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function list(string $remotePath): FileStatCollection
+    {
+        throw new Exception('Not implemented');
     }
 }

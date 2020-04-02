@@ -187,6 +187,14 @@ class AWSS3 extends Base
                     ->getExists();
     }
 
+    /**
+     * @inheritDoc
+     */
+    public function list(string $remotePath): FileStatCollection
+    {
+        throw new Exception('Not implemented');
+    }
+
     public function pull(string $remote, string $local, int $localChangeDate = null)
     {
         $result = $this->s3Client->getObject([

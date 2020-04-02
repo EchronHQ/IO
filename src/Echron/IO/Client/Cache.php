@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Echron\IO\Client;
 
 use Echron\IO\Data\FileStat;
+use Echron\IO\Data\FileStatCollection;
 use Exception;
 use Psr\SimpleCache\CacheInterface;
 use function base64_decode;
@@ -116,5 +117,13 @@ class Cache extends Base
     private function formatName(string $input): string
     {
         return sha1($input);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function list(string $remotePath): FileStatCollection
+    {
+        throw new Exception('Not implemented');
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Echron\IO\Client;
 
 use Echron\IO\Data\FileStat;
+use Echron\IO\Data\FileStatCollection;
 use Echron\IO\Data\FileType;
 use Exception;
 use Google_Client;
@@ -192,5 +193,13 @@ class GoogleDrive extends Base
     public function getService(): Google_Service_Drive
     {
         return $this->service;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function list(string $remotePath): FileStatCollection
+    {
+        throw new Exception('Not implemented');
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Echron\IO\Client;
 
 use Echron\IO\Data\FileStat;
+use Echron\IO\Data\FileStatCollection;
 use Echron\IO\Data\FileType;
 use Exception;
 use InvalidArgumentException;
@@ -143,6 +144,14 @@ class FtpClient extends Base
     public function setRemoteChangeDate(string $remote, int $changeDate)
     {
         // TODO: Implement setRemoteChangeDate() method.
+        throw new Exception('Not implemented');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function list(string $remotePath): FileStatCollection
+    {
         throw new Exception('Not implemented');
     }
 }

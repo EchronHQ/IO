@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Echron\IO\Client;
 
 use Echron\IO\Data\FileStat;
+use Echron\IO\Data\FileStatCollection;
 use Exception;
 use function is_null;
 
@@ -107,5 +108,13 @@ class Memory extends Base
         /** @var FileStat $stat */
         $stat = $file['stat'];
         $stat->setChangeDate($changeDate);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function list(string $remotePath): FileStatCollection
+    {
+        throw new Exception('Not implemented');
     }
 }

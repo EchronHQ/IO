@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Echron\IO\Client;
 
 use Echron\IO\Data\FileStat;
+use Echron\IO\Data\FileStatCollection;
 use Exception;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\ClientInterface;
@@ -123,6 +124,14 @@ class Http extends Base
     }
 
     public function setRemoteChangeDate(string $remote, int $changeDate)
+    {
+        throw new Exception('Not implemented');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function list(string $remotePath): FileStatCollection
     {
         throw new Exception('Not implemented');
     }
