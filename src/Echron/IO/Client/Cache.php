@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace Echron\IO\Client;
 
 use Echron\IO\Data\FileStat;
+use Echron\IO\Data\FileStatCollection;
+use Echron\IO\Data\FileTransferInfo;
 use Exception;
 use Psr\SimpleCache\CacheInterface;
 use function base64_decode;
@@ -22,7 +24,7 @@ class Cache extends Base
         $this->cache = $cache;
     }
 
-    public function push(string $local, string $remote, int $setRemoteChangeDate = null): bool
+    public function push(string $local, string $remote, int $setRemoteChangeDate = null): FileTransferInfo
     {
         $key = $this->formatName($remote);
         $statKey = $key . '_stat';
@@ -42,7 +44,8 @@ class Cache extends Base
 
         $this->setRemoteFileStat($remote, $stat);
 
-        return true;
+        // TODO: determine transferred bytes
+        return new FileTransferInfo(true);
     }
 
     public function getRemoteFileStat(string $remote): FileStat
@@ -70,7 +73,7 @@ class Cache extends Base
         return $fileStat->getExists();
     }
 
-    public function pull(string $remote, string $local, int $localChangeDate = null)
+    public function pull(string $remote, string $local, int $localChangeDate = null): FileTransferInfo
     {
         $key = $this->formatName($remote);
 
@@ -82,17 +85,22 @@ class Cache extends Base
         if (!is_null($localChangeDate)) {
             $this->setLocalChangeDate($local, $localChangeDate);
         }
+
+        // TODO: determine transferred bytes
+        return new FileTransferInfo(true);
     }
 
-    public function delete(string $remote)
+    public function delete(string $remote): bool
     {
         $key = $this->formatName($remote);
         $statKey = $key . '_stat';
         $this->cache->delete($key);
         $this->cache->delete($statKey);
+
+        return true;
     }
 
-    public function setRemoteChangeDate(string $remote, int $changeDate)
+    public function setRemoteChangeDate(string $remote, int $changeDate): bool
     {
         $key = $this->formatName($remote);
         $statKey = $key . '_stat';
@@ -102,10 +110,12 @@ class Cache extends Base
         $stat->setChangeDate($changeDate);
 
         $this->setRemoteFileStat($remote, $stat);
+
         // TODO: Implement setRemoteChangeDate() method.
+        return true;
     }
 
-    private function setRemoteFileStat(string $remote, FileStat $stat)
+    private function setRemoteFileStat(string $remote, FileStat $stat): void
     {
         $key = $this->formatName($remote);
         $statKey = $key . '_stat';
@@ -116,5 +126,21 @@ class Cache extends Base
     private function formatName(string $input): string
     {
         return sha1($input);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function list(string $remotePath, bool $recursive = false): FileStatCollection
+    {
+        throw new Exception('Not implemented');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function deleteFile(string $remotePath): bool
+    {
+        throw new Exception('Not implemented');
     }
 }

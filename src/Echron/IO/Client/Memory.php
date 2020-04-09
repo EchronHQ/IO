@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace Echron\IO\Client;
 
 use Echron\IO\Data\FileStat;
+use Echron\IO\Data\FileStatCollection;
+use Echron\IO\Data\FileTransferInfo;
 use Exception;
 use function is_null;
 
@@ -16,7 +18,7 @@ class Memory extends Base
         $this->files = [];
     }
 
-    public function push(string $local, string $remote, int $setRemoteChangeDate = null)
+    public function push(string $local, string $remote, int $setRemoteChangeDate = null): FileTransferInfo
     {
         //TODO: test if local exist
         $hashRemote = $this->hashFileName($remote);
@@ -41,6 +43,9 @@ class Memory extends Base
             'data' => $data,
 
         ];
+
+        // TODO: determine transferred bytes
+        return new FileTransferInfo(true);
     }
 
     private function hashFileName(string $file): string
@@ -78,15 +83,19 @@ class Memory extends Base
         return $fileStat;
     }
 
-    public function delete(string $remote)
+    public function delete(string $remote): bool
     {
         $hashedName = $this->hashFileName($remote);
         if (isset($this->files[$hashedName])) {
             unset($this->files[$hashedName]);
+
+            return true;
         }
+
+        return false;
     }
 
-    public function pull(string $remote, string $local, int $localChangeDate = null)
+    public function pull(string $remote, string $local, int $localChangeDate = null): FileTransferInfo
     {
         if ($this->remoteFileExists($remote)) {
             $file = $this->getFile($remote);
@@ -96,16 +105,37 @@ class Memory extends Base
             if (!is_null($localChangeDate)) {
                 $this->setLocalChangeDate($local, $localChangeDate);
             }
+
+            // TODO: determine transferred bytes
+            return new FileTransferInfo(true);
         } else {
             throw new Exception('Unable to pull file: remote "' . $remote . '" does not exist');
         }
     }
 
-    public function setRemoteChangeDate(string $remote, int $changeDate)
+    public function setRemoteChangeDate(string $remote, int $changeDate): bool
     {
         $file = $this->getFile($remote);
         /** @var FileStat $stat */
         $stat = $file['stat'];
         $stat->setChangeDate($changeDate);
+
+        return true;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function list(string $remotePath, bool $recursive = false): FileStatCollection
+    {
+        throw new Exception('Not implemented');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function deleteFile(string $remotePath): bool
+    {
+        throw new Exception('Not implemented');
     }
 }

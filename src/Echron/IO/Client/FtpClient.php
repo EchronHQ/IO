@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace Echron\IO\Client;
 
 use Echron\IO\Data\FileStat;
+use Echron\IO\Data\FileStatCollection;
+use Echron\IO\Data\FileTransferInfo;
 use Echron\IO\Data\FileType;
 use Exception;
 use InvalidArgumentException;
@@ -84,7 +86,7 @@ class FtpClient extends Base
         $this->client->getConnection();
     }
 
-    public function push(string $local, string $remote, int $setRemoteChangeDate = null)
+    public function push(string $local, string $remote, int $setRemoteChangeDate = null): FileTransferInfo
     {
         // TODO: Implement push() method.
         throw new Exception('Not implemented');
@@ -122,7 +124,7 @@ class FtpClient extends Base
         throw new Exception('Not implemented');
     }
 
-    public function pull(string $remote, string $local, int $localChangeDate = null)
+    public function pull(string $remote, string $local, int $localChangeDate = null): FileTransferInfo
     {
         $data = $this->client->read($remote);
 
@@ -132,17 +134,36 @@ class FtpClient extends Base
         if (!is_null($localChangeDate)) {
             $this->setLocalChangeDate($local, $localChangeDate);
         }
+
+        // TODO: determine transferred bytes
+        return new FileTransferInfo(true);
     }
 
-    public function delete(string $remote)
+    public function delete(string $remote): bool
     {
         // TODO: Implement delete() method.
         throw new Exception('Not implemented');
     }
 
-    public function setRemoteChangeDate(string $remote, int $changeDate)
+    public function setRemoteChangeDate(string $remote, int $changeDate): bool
     {
         // TODO: Implement setRemoteChangeDate() method.
+        throw new Exception('Not implemented');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function list(string $remotePath, bool $recursive = false): FileStatCollection
+    {
+        throw new Exception('Not implemented');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function deleteFile(string $remotePath): bool
+    {
         throw new Exception('Not implemented');
     }
 }

@@ -3,8 +3,9 @@ declare(strict_types=1);
 
 namespace Echron\IO\Client;
 
-use DateTime;
 use Echron\IO\Data\FileStat;
+use Echron\IO\Data\FileStatCollection;
+use Echron\IO\Data\FileTransferInfo;
 use Echron\IO\Data\FileType;
 use Echron\Tools\FileSystem;
 use Exception;
@@ -20,7 +21,7 @@ abstract class Base implements LoggerAwareInterface
     /** @var  LoggerInterface */
     protected $logger;
 
-    abstract public function push(string $local, string $remote, int $setRemoteChangeDate = null);
+    abstract public function push(string $local, string $remote, int $setRemoteChangeDate = null): FileTransferInfo;
 
     public function getLocalSize(string $local): int
     {
@@ -84,7 +85,7 @@ abstract class Base implements LoggerAwareInterface
                     ->getChangeDate();
     }
 
-    public final function pullLazy(string $remote, string $local)
+    public final function pullLazy(string $remote, string $local): FileTransferInfo
     {
         if (!$this->remoteFileExists($remote)) {
             throw new Exception('Unable to pull file: remote file `' . $remote . '` does not exist');
@@ -94,21 +95,25 @@ abstract class Base implements LoggerAwareInterface
 
             //TODO: when datetime is different or only when remote file is newer?
             if (!$localFileStat->equals($remoteFileStat)) {
+                // TODO: use $downloaded to determine if file was really downloaded or not
                 $downloaded = $this->pull($remote, $local, $remoteFileStat->getChangeDate());
                 //                if ($downloaded) {
                 //                $this->setLocalChangeDate($local, $remoteFileStat->getChangeDate());
+                // TODO: check transferred bytes
+                $result = new FileTransferInfo(true);
+                $result->setLazyTransfer(true, true);
 
-                return true;
-                //                } else {
-                //                    return false;
-                //                }
+                return $result;
             } else {
-                return true;
+                $result = new FileTransferInfo(true);
+                $result->setLazyTransfer(true, false);
+
+                return $result;
             }
         }
     }
 
-    public final function pushLazy(string $local, string $remote)
+    public final function pushLazy(string $local, string $remote): FileTransferInfo
     {
         if (!file_exists($local)) {
             throw new Exception('Unable to push file: local file `' . $local . '` does not exist');
@@ -127,35 +132,57 @@ abstract class Base implements LoggerAwareInterface
                 //                    echo "\t" . 'Set change date' . \PHP_EOL;
                 //                    $this->setRemoteChangeDate($remote, $localFileStat->getChangeDate());
 
-                return true;
+                // TODO: check transferred bytes
+                $result = new FileTransferInfo(true);
+                $result->setLazyTransfer(true, true);
+
+                return $result;
                 //                } else {
                 //                    return false;
                 //                }
             } else {
-                return true;
+                $result = new FileTransferInfo(true);
+                $result->setLazyTransfer(true, false);
+
+                return $result;
             }
         }
     }
 
     abstract public function remoteFileExists(string $remote): bool;
 
-    abstract public function pull(string $remote, string $local, int $localChangeDate = null);
+    abstract public function pull(string $remote, string $local, int $localChangeDate = null): FileTransferInfo;
 
-    public function setLocalChangeDate(string $local, int $changeDate)
+    public function setLocalChangeDate(string $local, int $changeDate): bool
     {
-        FileSystem::touch($local, DateTime::createFromFormat('U', (string)$changeDate));
+        try {
+            FileSystem::touch($local, \DateTime::createFromFormat('U', (string)$changeDate));
+
+            return true;
+        } catch (\Throwable $ex) {
+            return false;
+        }
     }
 
-    abstract public function delete(string $remote);
+    abstract public function delete(string $remote): bool;
 
-    abstract public function setRemoteChangeDate(string $remote, int $changeDate);
+    abstract public function setRemoteChangeDate(string $remote, int $changeDate): bool;
 
     public function removeLocal(string $local): bool
     {
         return unlink($local);
     }
 
-    public function setLogger(LoggerInterface $logger)
+    /**
+     * @param string $remotePath
+     * @param bool $recursive
+     * @return FileStatCollection
+     */
+    abstract public function list(string $remotePath, bool $recursive = false): FileStatCollection;
+
+    abstract public function deleteFile(string $remotePath): bool;
+
+    public function setLogger(LoggerInterface $logger): void
     {
         $this->logger = $logger;
     }

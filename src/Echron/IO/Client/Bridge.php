@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace Echron\IO\Client;
 
 use Echron\IO\Data\FileStat;
+use Echron\IO\Data\FileStatCollection;
+use Echron\IO\Data\FileTransferInfo;
 use Exception;
 
 class Bridge extends Base
@@ -26,7 +28,7 @@ class Bridge extends Base
         return $this->slave;
     }
 
-    public function push(string $masterPath, string $slavePath, int $setRemoteChangeDate = null): bool
+    public function push(string $masterPath, string $slavePath, int $setRemoteChangeDate = null): FileTransferInfo
     {
         $tmpLocalPath = $this->getTempFilename();
 
@@ -35,7 +37,8 @@ class Bridge extends Base
 
         $this->removeLocal($tmpLocalPath);
 
-        return true;
+        // TODO: determine transferred bytes
+        return new FileTransferInfo(true);
     }
 
     private function getTempFilename(): string
@@ -58,7 +61,7 @@ class Bridge extends Base
         return $this->slave->getRemoteChangeDate($remotePath);
     }
 
-    public function pull(string $slavePath, string $masterPath, int $localChangeDate = null)
+    public function pull(string $slavePath, string $masterPath, int $localChangeDate = null): FileTransferInfo
     {
         $tmpLocalPath = $this->getTempFilename();
 
@@ -66,6 +69,9 @@ class Bridge extends Base
         $this->master->push($tmpLocalPath, $masterPath, $localChangeDate);
 
         $this->removeLocal($tmpLocalPath);
+
+        // TODO: determine transferred bytes
+        return new FileTransferInfo(true);
     }
 
     public function getRemoteFileStat(string $remote): FileStat
@@ -73,7 +79,7 @@ class Bridge extends Base
         return $this->slave->getRemoteFileStat($remote);
     }
 
-    public function setRemoteChangeDate(string $slavePath, int $date)
+    public function setRemoteChangeDate(string $slavePath, int $date): bool
     {
         return $this->slave->setRemoteChangeDate($slavePath, $date);
     }
@@ -84,7 +90,7 @@ class Bridge extends Base
         return $this->master->getRemoteFileStat($masterPath);
     }
 
-    public function delete(string $remote)
+    public function delete(string $remote): bool
     {
         return $this->slave->delete($remote);
     }
@@ -112,5 +118,21 @@ class Bridge extends Base
     protected function _localFileExists(string $masterPath): bool
     {
         return $this->master->remoteFileExists($masterPath);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function list(string $remotePath, bool $recursive = false): FileStatCollection
+    {
+        throw new Exception('Not implemented');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function deleteFile(string $remotePath): bool
+    {
+        throw new Exception('Not implemented');
     }
 }

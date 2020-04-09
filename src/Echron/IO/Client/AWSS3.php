@@ -8,6 +8,7 @@ use Aws\S3\Exception\S3Exception;
 use Aws\S3\S3Client;
 use Echron\IO\Data\FileStat;
 use Echron\IO\Data\FileStatCollection;
+use Echron\IO\Data\FileTransferInfo;
 use Exception;
 use GuzzleHttp\Psr7\Stream;
 use function class_exists;
@@ -34,7 +35,7 @@ class AWSS3 extends Base
         ]);
     }
 
-    public function push(string $local, string $remote, int $setRemoteChangeDate = null)
+    public function push(string $local, string $remote, int $setRemoteChangeDate = null): FileTransferInfo
     {
         $options = [
             'Bucket'     => $this->bucket,
@@ -48,6 +49,9 @@ class AWSS3 extends Base
             //TODO: can we set the remote change date when putting an object?
             $this->setRemoteChangeDate($remote, $setRemoteChangeDate);
         }
+
+        // TODO: determine transferred bytes
+        return new FileTransferInfo(true);
     }
 
     public function createBucket(string $bucket)
@@ -121,16 +125,18 @@ class AWSS3 extends Base
         return $fileStat;
     }
 
-    public function delete(string $remote)
+    public function delete(string $remote): bool
     {
         $result = $this->s3Client->deleteObject([
             'Bucket' => $this->bucket,
             'Key'    => $remote,
         ]);
-        //var_dump($result);
+
+        // TODO: use result to determine success
+        return true;
     }
 
-    public function setRemoteChangeDate(string $remote, int $changeDate)
+    public function setRemoteChangeDate(string $remote, int $changeDate): bool
     {
         throw new Exception('Not implemented');
     }
@@ -187,7 +193,23 @@ class AWSS3 extends Base
                     ->getExists();
     }
 
-    public function pull(string $remote, string $local, int $localChangeDate = null)
+    /**
+     * @inheritDoc
+     */
+    public function list(string $remotePath, bool $recursive = false): FileStatCollection
+    {
+        throw new Exception('Not implemented');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function deleteFile(string $remotePath): bool
+    {
+        throw new Exception('Not implemented');
+    }
+
+    public function pull(string $remote, string $local, int $localChangeDate = null): FileTransferInfo
     {
         $result = $this->s3Client->getObject([
             'Bucket' => $this->bucket,
@@ -205,6 +227,9 @@ class AWSS3 extends Base
                 }
             }
         }
+
+        // TODO: determine transferred bytes
+        return new FileTransferInfo(true);
     }
 
 }
