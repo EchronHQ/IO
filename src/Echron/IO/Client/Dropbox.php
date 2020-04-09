@@ -170,7 +170,15 @@ class Dropbox extends Base
     /**
      * @inheritDoc
      */
-    public function list(string $remotePath): FileStatCollection
+    public function list(string $remotePath, bool $recursive = false): FileStatCollection
+    {
+        throw new Exception('Not implemented');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function deleteFile(string $remotePath): bool
     {
         throw new Exception('Not implemented');
     }

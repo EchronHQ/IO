@@ -206,24 +206,53 @@ class SFTP extends Base
     /**
      * @inheritDoc
      */
-    public function list(string $remotePath): FileStatCollection
+    public function list(string $remotePath, bool $recursive = false): FileStatCollection
     {
         if (!$this->sftpClient->isConnected()) {
             $this->connectClient();
         }
 
-        $rawFiles = $this->sftpClient->rawlist($remotePath);
+        //\var_dump($remotePath);
+        $rawFiles = $this->sftpClient->rawlist($remotePath, $recursive);
+        if ($rawFiles === false) {
+            throw new Exception('Unable to get file list');
+        }
 
+        return $this->getFiles($remotePath, $rawFiles, $recursive);
+    }
+
+    private function getFiles(string $remotePath, array $rawFiles, bool $recursive): FileStatCollection
+    {
         $result = new FileStatCollection();
-        foreach ($rawFiles as $rawFile) {
-            $fileStat = $this->rawFileToFileStat($rawFile, $remotePath);
-
-            if (!is_null($fileStat)) {
-                $result->add($fileStat);
+        foreach ($rawFiles as $key => $rawFile) {
+            if (\is_object($rawFile) || !$recursive) {
+                $fileStat = $this->rawFileToFileStat((array)$rawFile, $remotePath);
+                if (!is_null($fileStat)) {
+                    $result->add($fileStat);
+                }
+            } elseif (\is_array($rawFile)) {
+                $path = $this->gluePath($remotePath, (string)$key);
+                $subFiles = $this->getFiles($path, $rawFile, $recursive);
+                foreach ($subFiles as $subFile) {
+                    $result->add($subFile);
+                }
+            } else {
             }
         }
 
         return $result;
+    }
+
+    private function gluePath($part1, string $part2): string
+    {
+        // TODO: is forward slash the correct path separator?
+        $pathSeparator = '/';
+
+        if (StringHelper::endsWith($part1, $pathSeparator)) {
+            return $part1 . $part2;
+        }
+
+        return $part1 . $pathSeparator . $part2;;
     }
 
     private function rawFileToFileStat(array $rawFile, string $remotePath): ?FileStat
@@ -231,13 +260,8 @@ class SFTP extends Base
         if ($rawFile['filename'] === '.' || $rawFile['filename'] === '..') {
             return null;
         }
-        // TODO: is forward slash the correct path separator?
-        $pathSeparator = '/';
-        $path = $remotePath . $pathSeparator . $rawFile['filename'];
 
-        if (StringHelper::endsWith($remotePath, $pathSeparator)) {
-            $path = $remotePath . $rawFile['filename'];
-        }
+        $path = $this->gluePath($remotePath, $rawFile['filename']);
 
         $fileStat = new FileStat($path);
 
@@ -266,5 +290,18 @@ class SFTP extends Base
         $fileStat->setType($type);
 
         return $fileStat;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function deleteFile(string $remotePath): bool
+    {
+        if (!$this->sftpClient->isConnected()) {
+            $this->connectClient();
+        }
+
+        return $this->getClient()
+                    ->delete($remotePath, false);
     }
 }

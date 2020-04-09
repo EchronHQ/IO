@@ -158,9 +158,12 @@ abstract class Base implements LoggerAwareInterface
 
     /**
      * @param string $remotePath
+     * @param bool $recursive
      * @return FileStatCollection
      */
-    abstract public function list(string $remotePath): FileStatCollection;
+    abstract public function list(string $remotePath, bool $recursive = false): FileStatCollection;
+
+    abstract public function deleteFile(string $remotePath): bool;
 
     public function setLogger(LoggerInterface $logger)
     {
