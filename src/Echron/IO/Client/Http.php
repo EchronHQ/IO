@@ -5,6 +5,7 @@ namespace Echron\IO\Client;
 
 use Echron\IO\Data\FileStat;
 use Echron\IO\Data\FileStatCollection;
+use Echron\IO\Data\FileTransferInfo;
 use Exception;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\ClientInterface;
@@ -21,7 +22,7 @@ class Http extends Base
         $this->guzzleClient = new GuzzleClient($guzzleClientConfig);
     }
 
-    public function setBasicAuth(string $username, string $password)
+    public function setBasicAuth(string $username, string $password): void
     {
         $this->basicAuth = [
             $username,
@@ -29,7 +30,7 @@ class Http extends Base
         ];
     }
 
-    public function pull(string $remote, string $local, int $localChangeDate = null)
+    public function pull(string $remote, string $local, int $localChangeDate = null): FileTransferInfo
     {
         $options = [];
         if (!is_null($this->basicAuth)) {
@@ -53,14 +54,17 @@ class Http extends Base
         if (!is_null($localChangeDate)) {
             $this->setLocalChangeDate($local, $localChangeDate);
         }
+
+        // TODO: determine transferred bytes
+        return new FileTransferInfo(true);
     }
 
-    public function push(string $local, string $remote, int $setRemoteChangeDate = null)
+    public function push(string $local, string $remote, int $setRemoteChangeDate = null): FileTransferInfo
     {
         throw new Exception('Not implemented');
     }
 
-    public function delete(string $remote)
+    public function delete(string $remote): bool
     {
         throw new Exception('Not implemented');
     }
@@ -123,7 +127,7 @@ class Http extends Base
         return $remoteFileStat->getExists();
     }
 
-    public function setRemoteChangeDate(string $remote, int $changeDate)
+    public function setRemoteChangeDate(string $remote, int $changeDate): bool
     {
         throw new Exception('Not implemented');
     }

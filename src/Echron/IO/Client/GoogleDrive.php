@@ -5,6 +5,7 @@ namespace Echron\IO\Client;
 
 use Echron\IO\Data\FileStat;
 use Echron\IO\Data\FileStatCollection;
+use Echron\IO\Data\FileTransferInfo;
 use Echron\IO\Data\FileType;
 use Exception;
 use Google_Client;
@@ -77,7 +78,7 @@ class GoogleDrive extends Base
         return $client;
     }
 
-    public function push(string $local, string $remote, int $setRemoteChangeDate = null)
+    public function push(string $local, string $remote, int $setRemoteChangeDate = null): FileTransferInfo
     {
         $file = new Google_Service_Drive_DriveFile();
         $file->setName($remote);
@@ -96,6 +97,9 @@ class GoogleDrive extends Base
         }
 
         $this->service->files->create($file, $options);
+
+        // TODO: determine transferred bytes
+        return new FileTransferInfo(true);
     }
 
     private function formatTime(int $time): string
@@ -150,7 +154,7 @@ class GoogleDrive extends Base
         return null;
     }
 
-    public function pull(string $remote, string $local, int $localChangeDate = null)
+    public function pull(string $remote, string $local, int $localChangeDate = null): FileTransferInfo
     {
         try {
             $file = $this->getFileByName($remote);
@@ -169,12 +173,17 @@ class GoogleDrive extends Base
             if (!is_null($localChangeDate)) {
                 $this->setLocalChangeDate($local, $localChangeDate);
             }
+
+            // TODO: determine transferred bytes
+            return new FileTransferInfo(true);
         } catch (Google_Service_Exception $ex) {
             echo $ex->getMessage() . PHP_EOL;
+
+            return new FileTransferInfo(false);
         }
     }
 
-    public function delete(string $remote)
+    public function delete(string $remote): bool
     {
         $file = $this->getFileByName($remote);
 
@@ -182,9 +191,11 @@ class GoogleDrive extends Base
             throw new Exception('Remote file does not exist');
         }
         $this->service->files->delete($file->getId());
+
+        return true;
     }
 
-    public function setRemoteChangeDate(string $remote, int $changeDate)
+    public function setRemoteChangeDate(string $remote, int $changeDate): bool
     {
         // TODO: Implement setRemoteChangeDate() method.
         throw new Exception('Not implemented');

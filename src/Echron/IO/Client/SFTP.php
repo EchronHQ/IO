@@ -5,6 +5,7 @@ namespace Echron\IO\Client;
 
 use Echron\IO\Data\FileStat;
 use Echron\IO\Data\FileStatCollection;
+use Echron\IO\Data\FileTransferInfo;
 use Echron\IO\Data\FileType;
 use Echron\Tools\StringHelper;
 use Exception;
@@ -70,7 +71,7 @@ class SFTP extends Base
         }
     }
 
-    public function push(string $local, string $remote, int $setRemoteChangeDate = null): bool
+    public function push(string $local, string $remote, int $setRemoteChangeDate = null): FileTransferInfo
     {
         if (!file_exists($local)) {
             throw new Exception('Unable to push, local file does not exist');
@@ -87,13 +88,14 @@ class SFTP extends Base
         $dirCreated = $this->sftpClient->mkdir($directory, -1, true);
 
         //        var_dump($dirCreated);
-        $res = $this->sftpClient->put($remote, $local, SFTPClient::SOURCE_LOCAL_FILE);
+        $fileIsUploaded = $this->sftpClient->put($remote, $local, SFTPClient::SOURCE_LOCAL_FILE);
 
         if (!is_null($setRemoteChangeDate)) {
             $this->setRemoteChangeDate($remote, $setRemoteChangeDate);
         }
 
-        return $res;
+        // TODO: determine transferred bytes
+        return new FileTransferInfo($fileIsUploaded);
 
         //        $res = $this->sftpClient->put($remote, $local, SFTPClient::SOURCE_LOCAL_FILE, -1, -1, function ($sftp_packet_size) {
         //            echo 'X: ' . $sftp_packet_size . \PHP_EOL;
@@ -151,12 +153,13 @@ class SFTP extends Base
         return $parsedType;
     }
 
-    public function delete(string $remote)
+    public function delete(string $remote): bool
     {
         if (!$this->sftpClient->isConnected()) {
             $this->connectClient();
         }
-        $this->sftpClient->delete($remote);
+
+        return $this->sftpClient->delete($remote);
     }
 
     public function remoteFileExists(string $remote): bool
@@ -169,15 +172,15 @@ class SFTP extends Base
         return $this->sftpClient->file_exists($remote);
     }
 
-    public function pull(string $remote, string $local, int $localChangeDate = null)
+    public function pull(string $remote, string $local, int $localChangeDate = null): FileTransferInfo
     {
         if (!$this->sftpClient->isConnected()) {
             $this->connectClient();
         }
 
-        $downloaded = $this->sftpClient->get($remote, $local);
+        $fileIsDownloaded = $this->sftpClient->get($remote, $local);
 
-        if (!$downloaded) {
+        if (!$fileIsDownloaded) {
             throw new Exception('Unable to pull remote file "' . $remote . '" (' . $this->sftpClient->getLastSFTPError() . ')');
             //            var_dump($remote . ' => ' . $local);
         }
@@ -186,10 +189,11 @@ class SFTP extends Base
             $this->setLocalChangeDate($local, $localChangeDate);
         }
 
-        return $downloaded;
+        // TODO: determine transferred bytes
+        return new FileTransferInfo($fileIsDownloaded);
     }
 
-    public function setRemoteChangeDate(string $remote, int $changeDate)
+    public function setRemoteChangeDate(string $remote, int $changeDate): bool
     {
         if (!$this->sftpClient->isConnected()) {
             $this->connectClient();
