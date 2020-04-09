@@ -48,4 +48,14 @@ class FileStatCollection implements \IteratorAggregate, \Countable
         return $result;
     }
 
+    public static function totalBytes(FileStatCollection $collection): int
+    {
+        $total = 0;
+        foreach ($collection as $item) {
+            $total += $item->getBytes();
+        }
+
+        return $total;
+    }
+
 }
