@@ -187,19 +187,22 @@ class SFTP extends Base
         return $this->sftpClient->file_exists($remote);
     }
 
-    public function pull(string $remote, string $local, int $localChangeDate = null): FileTransferInfo
-    {
+    public function pull(
+        string $remote,
+        string $local,
+        int $localChangeDate = null,
+        bool $showProgress = false
+    ): FileTransferInfo {
         if (!$this->sftpClient->isConnected()) {
             $this->connectClient();
         }
 
-        $showProgress = false;
         $progress = null;
         if ($showProgress) {
             $stats = $this->getRemoteFileStat($remote);
             $progress = function ($read) use ($stats) {
                 if ($read > 0) {
-                    $percent = \round($read / $stats->getBytes() * 100);
+                    $percent = \round($read / $stats->getBytes() * 100, 2);
                     echo $percent . '%' . \PHP_EOL;
                 } else {
                     echo '0%' . \PHP_EOL;
