@@ -7,6 +7,7 @@ use Echron\IO\Data\FileStat;
 use Echron\IO\Data\FileStatCollection;
 use Echron\IO\Data\FileTransferInfo;
 use Echron\IO\Data\FileType;
+use Echron\IO\Helper\FileHelper;
 use Echron\Tools\StringHelper;
 use Exception;
 use phpseclib3\Crypt\RSA;
@@ -17,17 +18,27 @@ use function is_null;
 
 class SFTP extends Base
 {
-    private $host, $username, $password, $port, $timeout = 30;
+    private $host;
+    private $username;
+    private $password;
+    private $port;
+    private $timeout;
     /** @var  SFTPClient */
     private $sftpClient;
 
-    public function __construct(string $host, int $port = 22)
+    public function __construct(string $host, int $port = 22, int $timeout = 30)
     {
         $this->host = $host;
         $this->port = $port;
+        $this->timeout = $timeout;
     }
 
-    public function loginWithPassword(string $username, string $password = null)
+    public function getHost(): string
+    {
+        return $this->host;
+    }
+
+    public function loginWithPassword(string $username, string $password = null): void
     {
         $this->username = $username;
         $this->password = $password;
@@ -35,16 +46,18 @@ class SFTP extends Base
         $this->initClient();
     }
 
-    public function loginWithKey(string $username, string $keyFilePath, string $keyFilePassword = null)
+    public function loginWithKey(string $username, string $keyFilePath, string $keyFilePassword = null): void
     {
         if (!file_exists($keyFilePath)) {
-            throw new Exception('Key file does not exist');
+            $maskedKeyFile = FileHelper::maskFileName($keyFilePath);
+
+            throw new Exception('Key file "' . $maskedKeyFile . '" does not exist');
         }
 
         if (!is_null($keyFilePassword)) {
             $key = RSA::load(file_get_contents($keyFilePath), $keyFilePassword);
         } else {
-            $key = RSA::load(file_get_contents($keyFilePath), $keyFilePassword);
+            $key = RSA::load(file_get_contents($keyFilePath));
         }
 
         $this->username = $username;
@@ -53,12 +66,12 @@ class SFTP extends Base
         $this->initClient();
     }
 
-    private function initClient()
+    private function initClient(): void
     {
         $this->connectClient();
     }
 
-    private function connectClient()
+    private function connectClient(): void
     {
         if (!is_null($this->sftpClient)) {
             $this->sftpClient->disconnect();
@@ -167,18 +180,35 @@ class SFTP extends Base
         if (!$this->sftpClient->isConnected()) {
             $this->connectClient();
         }
+
         $this->sftpClient->disableStatCache();
 
         return $this->sftpClient->file_exists($remote);
     }
 
-    public function pull(string $remote, string $local, int $localChangeDate = null): FileTransferInfo
-    {
+    public function pull(
+        string $remote,
+        string $local,
+        int $localChangeDate = null,
+        bool $showProgress = false
+    ): FileTransferInfo {
         if (!$this->sftpClient->isConnected()) {
             $this->connectClient();
         }
 
-        $fileIsDownloaded = $this->sftpClient->get($remote, $local);
+        $progress = null;
+        if ($showProgress) {
+            $stats = $this->getRemoteFileStat($remote);
+            $progress = function ($read) use ($stats) {
+                if ($read > 0) {
+                    $percent = \round($read / $stats->getBytes() * 100, 2);
+                    echo $percent . '%' . \PHP_EOL;
+                } else {
+                    echo '0%' . \PHP_EOL;
+                }
+            };
+        }
+        $fileIsDownloaded = $this->sftpClient->get($remote, $local, 0, -1, $progress);
 
         if (!$fileIsDownloaded) {
             throw new Exception('Unable to pull remote file "' . $remote . '" (' . $this->sftpClient->getLastSFTPError() . ')');
@@ -190,7 +220,10 @@ class SFTP extends Base
         }
 
         // TODO: determine transferred bytes
-        return new FileTransferInfo($fileIsDownloaded);
+        // return null;
+        $fileTransferInfo = new FileTransferInfo($fileIsDownloaded);
+
+        return $fileTransferInfo;
     }
 
     public function setRemoteChangeDate(string $remote, int $changeDate): bool
@@ -256,7 +289,7 @@ class SFTP extends Base
             return $part1 . $part2;
         }
 
-        return $part1 . $pathSeparator . $part2;;
+        return $part1 . $pathSeparator . $part2;
     }
 
     private function rawFileToFileStat(array $rawFile, string $remotePath): ?FileStat
