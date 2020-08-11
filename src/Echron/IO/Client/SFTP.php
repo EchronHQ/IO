@@ -19,19 +19,18 @@ use function is_null;
 class SFTP extends Base
 {
     private $host;
-    private $port;
-
     private $username;
     private $password;
-
-    private $timeout = 30;
+    private $port;
+    private $timeout;
     /** @var  SFTPClient */
     private $sftpClient;
 
-    public function __construct(string $host, int $port = 22)
+    public function __construct(string $host, int $port = 22, int $timeout = 30)
     {
         $this->host = $host;
         $this->port = $port;
+        $this->timeout = $timeout;
     }
 
     public function getHost(): string
@@ -290,7 +289,7 @@ class SFTP extends Base
             return $part1 . $part2;
         }
 
-        return $part1 . $pathSeparator . $part2;;
+        return $part1 . $pathSeparator . $part2;
     }
 
     private function rawFileToFileStat(array $rawFile, string $remotePath): ?FileStat
