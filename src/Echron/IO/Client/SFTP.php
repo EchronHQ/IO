@@ -189,9 +189,10 @@ class SFTP extends Base
     public function pull(
         string $remote,
         string $local,
-        int $localChangeDate = null,
-        bool $showProgress = false
-    ): FileTransferInfo {
+        int    $localChangeDate = null,
+        bool   $showProgress = false
+    ): FileTransferInfo
+    {
         if (!$this->sftpClient->isConnected()) {
             $this->connectClient();
         }
@@ -238,6 +239,14 @@ class SFTP extends Base
     public function getClient(): SFTPClient
     {
         return $this->sftpClient;
+    }
+
+    public function setClient(SFTPClient $sftpClient, bool $disconnectIfClientExists = true): void
+    {
+        if ($disconnectIfClientExists && !is_null($this->sftpClient) && $this->sftpClient->isConnected()) {
+            $this->sftpClient->disconnect();;
+        }
+        $this->sftpClient = $sftpClient;
     }
 
     /**
@@ -339,6 +348,6 @@ class SFTP extends Base
         }
 
         return $this->getClient()
-                    ->delete($remotePath, false);
+            ->delete($remotePath, false);
     }
 }
