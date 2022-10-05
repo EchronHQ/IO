@@ -10,6 +10,7 @@ use Echron\IO\Data\FileType;
 use Echron\IO\Helper\FileHelper;
 use Echron\Tools\StringHelper;
 use Exception;
+use phpseclib3\Crypt\Common\AsymmetricKey;
 use phpseclib3\Crypt\RSA;
 use phpseclib3\Net\SFTP as SFTPClient;
 use function file_exists;
@@ -18,13 +19,13 @@ use function is_null;
 
 class SFTP extends Base
 {
-    private $host;
-    private $username;
+    private string $host;
+    private string $username;
+    /** @var string|AsymmetricKey|null */
     private $password;
-    private $port;
-    private $timeout;
-    /** @var  SFTPClient */
-    private $sftpClient;
+    private int $port;
+    private int $timeout;
+    private ?SFTPClient $sftpClient = null;
 
     public function __construct(string $host, int $port = 22, int $timeout = 30)
     {
@@ -42,8 +43,6 @@ class SFTP extends Base
     {
         $this->username = $username;
         $this->password = $password;
-        //TODO: lazy connection
-        $this->initClient();
     }
 
     public function loginWithKey(string $username, string $keyFilePath, string $keyFilePassword = null): void
@@ -62,18 +61,11 @@ class SFTP extends Base
 
         $this->username = $username;
         $this->password = $key;
-        //TODO: lazy connection
-        $this->initClient();
     }
 
-    private function initClient(): void
+    private function connect(): void
     {
-        $this->connectClient();
-    }
-
-    private function connectClient(): void
-    {
-        if (!is_null($this->sftpClient)) {
+        if ($this->sftpClient !== null) {
             $this->sftpClient->disconnect();
         }
         $this->sftpClient = new SFTPClient($this->host, $this->port, $this->timeout);
@@ -90,8 +82,8 @@ class SFTP extends Base
             throw new Exception('Unable to push, local file does not exist');
         }
 
-        if (!$this->sftpClient->isConnected()) {
-            $this->connectClient();
+        if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
+            $this->connect();
         }
         //Create directory
 
@@ -120,8 +112,8 @@ class SFTP extends Base
 
     public function getRemoteFileStat(string $remote): FileStat
     {
-        if (!$this->sftpClient->isConnected()) {
-            $this->connectClient();
+        if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
+            $this->connect();
         }
         $sftpType = $this->sftpClient->filetype($remote);
 
@@ -134,8 +126,8 @@ class SFTP extends Base
             //TODO: separate when only 1 of the stats is needed
             //TODO: try  $this->sftpClient->stat()
 
-            $bytes = intval($this->sftpClient->filesize($remote));
-            $changedate = intval($this->sftpClient->filemtime($remote));
+            $bytes = (int)$this->sftpClient->filesize($remote);
+            $changedate = (int)$this->sftpClient->filemtime($remote);
 
             $stat->setExists(true);
             $stat->setBytes($bytes);
@@ -168,8 +160,8 @@ class SFTP extends Base
 
     public function delete(string $remote): bool
     {
-        if (!$this->sftpClient->isConnected()) {
-            $this->connectClient();
+        if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
+            $this->connect();
         }
 
         return $this->sftpClient->delete($remote);
@@ -177,8 +169,8 @@ class SFTP extends Base
 
     public function remoteFileExists(string $remote): bool
     {
-        if (!$this->sftpClient->isConnected()) {
-            $this->connectClient();
+        if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
+            $this->connect();
         }
 
         $this->sftpClient->disableStatCache();
@@ -193,14 +185,14 @@ class SFTP extends Base
         bool   $showProgress = false
     ): FileTransferInfo
     {
-        if (!$this->sftpClient->isConnected()) {
-            $this->connectClient();
+        if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
+            $this->connect();
         }
 
         $progress = null;
         if ($showProgress) {
             $stats = $this->getRemoteFileStat($remote);
-            $progress = function ($read) use ($stats) {
+            $progress = static function ($read) use ($stats) {
                 if ($read > 0) {
                     $percent = \round($read / $stats->getBytes() * 100, 2);
                     echo $percent . '%' . \PHP_EOL;
@@ -222,21 +214,27 @@ class SFTP extends Base
 
         // TODO: determine transferred bytes
         // return null;
-        $fileTransferInfo = new FileTransferInfo($fileIsDownloaded);
-
-        return $fileTransferInfo;
+        return new FileTransferInfo($fileIsDownloaded);
     }
 
     public function setRemoteChangeDate(string $remote, int $changeDate): bool
     {
-        if (!$this->sftpClient->isConnected()) {
-            $this->connectClient();
+        if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
+            $this->connect();
         }
 
         return $this->sftpClient->touch($remote, $changeDate);
     }
 
-    public function getClient(): SFTPClient
+
+    public function disconnect(): void
+    {
+        if ($this->sftpClient !== null) {
+            $this->sftpClient->disconnect();
+        }
+    }
+
+    public function getClient(): ?SFTPClient
     {
         return $this->sftpClient;
     }
@@ -255,7 +253,7 @@ class SFTP extends Base
     public function list(string $remotePath, bool $recursive = false): FileStatCollection
     {
         if (!$this->sftpClient->isConnected()) {
-            $this->connectClient();
+            $this->connect();
         }
 
         //\var_dump($remotePath);
@@ -282,14 +280,13 @@ class SFTP extends Base
                 foreach ($subFiles as $subFile) {
                     $result->add($subFile);
                 }
-            } else {
             }
         }
 
         return $result;
     }
 
-    private function gluePath($part1, string $part2): string
+    private function gluePath(string $part1, string $part2): string
     {
         // TODO: is forward slash the correct path separator?
         $pathSeparator = '/';
@@ -327,8 +324,8 @@ class SFTP extends Base
         //\var_dump($this->sftpClient->file_types);
         // $type = $this->parseSFTPTypeToFileType($this->sftpClient->filetype($path));
 
-        $bytes = intval($rawFile['size']);
-        $changedate = intval($rawFile['mtime']);
+        $bytes = (int)$rawFile['size'];
+        $changedate = (int)$rawFile['mtime'];
 
         $fileStat->setExists(true);
         $fileStat->setBytes($bytes);
@@ -343,11 +340,10 @@ class SFTP extends Base
      */
     public function deleteFile(string $remotePath): bool
     {
-        if (!$this->sftpClient->isConnected()) {
-            $this->connectClient();
+        if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
+            $this->connect();
         }
 
-        return $this->getClient()
-            ->delete($remotePath, false);
+        return $this->getClient()->delete($remotePath, false);
     }
 }
