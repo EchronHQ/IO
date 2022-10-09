@@ -49,7 +49,7 @@ class GeneralTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(-1, $size);
     }
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         $this->removeTestFiles();
@@ -70,7 +70,7 @@ class GeneralTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         parent::tearDown();
 

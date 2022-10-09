@@ -1,5 +1,5 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 require_once 'AbstractTest.php';
 
 class AWSS3Test extends AbstractTest
@@ -26,7 +26,7 @@ class AWSS3Test extends AbstractTest
         return '';
     }
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -37,12 +37,14 @@ class AWSS3Test extends AbstractTest
                 $client->createBucket($this->bucket);
             }
         } catch (\Aws\S3\Exception\S3Exception $ex) {
-            echo 'EX: ' . $ex->getMessage() . PHP_EOL;
+            $this->markTestSkipped(
+                'Unable to set up AWSS3 Bucket'
+            );
         }
 
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         parent::tearDown();
         $client = $this->getClient();
@@ -53,7 +55,7 @@ class AWSS3Test extends AbstractTest
                 $client->deleteBucket($this->bucket);
             }
         } catch (\Aws\S3\Exception\S3Exception $ex) {
-            echo 'EX: ' . $ex->getMessage() . PHP_EOL;
+            //echo 'EX: ' . $ex->getMessage() . PHP_EOL;
         }
 
     }

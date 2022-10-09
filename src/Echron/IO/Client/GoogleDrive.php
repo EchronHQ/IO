@@ -8,10 +8,8 @@ use Echron\IO\Data\FileStatCollection;
 use Echron\IO\Data\FileTransferInfo;
 use Echron\IO\Data\FileType;
 use Exception;
-use Google_Client;
 use Google_Service_Drive;
 use Google_Service_Drive_DriveFile;
-use Google_Service_Exception;
 use GuzzleHttp\Psr7\Response;
 use function class_exists;
 use function is_null;
@@ -24,12 +22,18 @@ use const PHP_EOL;
 class GoogleDrive extends Base
 {
 
-    private $client, $service;
+    private $client;
+    private $service;
     private $credentialsFilePath;
+
+    public function available(): bool
+    {
+        return class_exists('\Google_Service_Drive');
+    }
 
     public function __construct(string $accessToken = null, string $credentialsFilePath = 'credentials.json')
     {
-        if (!class_exists('\Google_Service_Drive')) {
+        if (!$this->available()) {
             throw new Exception('google/apiclient package not installed');
         }
         $this->client = $this->getClient();
@@ -43,7 +47,7 @@ class GoogleDrive extends Base
     public function getAccessTokenStep1()
     {
         $authUrl = $this->getClient()
-                        ->createAuthUrl();
+            ->createAuthUrl();
 
         echo 'Auth: ' . $authUrl . PHP_EOL;
     }
@@ -51,7 +55,7 @@ class GoogleDrive extends Base
     public function getAccessTokenStep2(string $authCode)
     {
         $accessToken = $this->getClient()
-                            ->fetchAccessTokenWithAuthCode($authCode);
+            ->fetchAccessTokenWithAuthCode($authCode);
         //var_dump($accessToken);
         echo 'Accesstoken: ' . $accessToken['access_token'] . PHP_EOL;
     }
@@ -166,7 +170,7 @@ class GoogleDrive extends Base
             /** @var Response $x */
             $x = $this->service->files->get($file->getId(), ['alt' => 'media']);
             $contents = $x->getBody()
-                          ->getContents();
+                ->getContents();
 
             $this->setLocalFileContent($local, $contents);
 

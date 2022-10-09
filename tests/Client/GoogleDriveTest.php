@@ -4,8 +4,23 @@ require_once 'AbstractTest.php';
 
 class GoogleDriveTest extends AbstractTest
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-    protected function getClient(): \Echron\IO\Client\Base
+        $client = $this->getClient();
+
+
+        if (!$client->available()) {
+            $this->markTestSkipped(
+                'GoogleDrive not available'
+            );
+        }
+
+
+    }
+
+    protected function getClient(): \Echron\IO\Client\GoogleDrive
     {
         $accessToken = 'ya29.GluIB4pbI4iDx0Tz36vEbkZwyox8HDj4bsgX11AKRI_L_NRv1VctzZf31KpKqSrt53ncbd_dc9P5qzAVnwoBjzkTGWIHEFn9yWKdF1y918eJcJWvMIBgZ9FTuRh2';
         $client = new \Echron\IO\Client\GoogleDrive($accessToken);

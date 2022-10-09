@@ -8,28 +8,32 @@ use Echron\IO\Data\FileStatCollection;
 use Echron\IO\Data\FileTransferInfo;
 use Echron\IO\Data\FileType;
 use Exception;
-use InvalidArgumentException;
-use League\Flysystem\Adapter\Ftp;
+
+use League\Flysystem\Ftp\FtpAdapter;
+use League\Flysystem\Ftp\FtpConnectionOptions;
 use function is_null;
 
 class FtpClient extends Base
 {
-    protected $_connection;
-    protected $_host, $_username, $_password, $_port, $_passive = false, $_timeout = 10;
+    protected int $_timeout = 10;
+    protected bool $_passive = false;
+    protected string $_username;
+    protected int $_port;
+    protected string $_password;
+    protected string $_host;
 
-    protected $connected = false;
-    protected $cachedFileInfo = [];
-    /** @var Ftp */
-    private $client;
+    protected bool $connected = false;
+    private FtpAdapter $client;
 
     public function __construct(
         string $host,
         string $username,
         string $password,
-        int $port = 21,
-        bool $passive = false,
-        bool $autoConnect = false
-    ) {
+        int    $port = 21,
+        bool   $passive = false,
+        bool   $autoConnect = false
+    )
+    {
         $this->_host = $host;
         $this->_username = $username;
         $this->_password = $password;
@@ -38,25 +42,23 @@ class FtpClient extends Base
         $this->_passive = $passive;
         // $this->enableDebug();
 
-        $port = $this->_validatePort($port);
-        if ($port !== false) {
-            $this->_port = $port;
-        }
 
-        $config = [
-            'host'     => $this->_host,
-            'username' => $this->_username,
-            'password' => $this->_password,
+        $config = FtpConnectionOptions::fromArray(
+            [
+                'host'     => $this->_host,
+                'username' => $this->_username,
+                'password' => $this->_password,
 
-            /** optional config settings */
-            'port'     => $this->_port,
-            'root'     => '/',
-            'passive'  => $this->_passive,
-            //'ssl' => true,
-            'timeout'  => 10,
-        ];
-        $this->client = new Ftp($config);
-        $this->client->setTimeout(5);
+                /** optional config settings */
+                'port'     => $this->_port,
+                'root'     => '/',
+                'passive'  => $this->_passive,
+                //'ssl' => true,
+                'timeout'  => $this->_timeout,
+            ]
+        );
+        $this->client = new FtpAdapter($config);
+//        $this->client->setTimeout(5);
 
         //$this->client->setRoot('/');
 
@@ -65,25 +67,10 @@ class FtpClient extends Base
         }
     }
 
-    private function _validatePort($port)
-    {
-        if (is_int($port)) {
-            return $port;
-        } else {
-            if (is_string($port)) {
-                $port = intval($port);
-                if ($port === 0) {
-                    throw new InvalidArgumentException('Port should be an integer');
-                }
-            }
-        }
-
-        return false;
-    }
 
     private function connect()
     {
-        $this->client->getConnection();
+//        $this->client->getConnection();
     }
 
     public function push(string $local, string $remote, int $setRemoteChangeDate = null): FileTransferInfo
@@ -102,17 +89,19 @@ class FtpClient extends Base
         $stat = new FileStat($remote, FileType::File());
         $stat->setExists(false);
 
-        $timeStamp = $this->client->getTimestamp($remote);
-        if ($timeStamp !== false) {
-            $stat->setChangeDate($timeStamp['timestamp']);
+        $timeStamp = $this->client->lastModified($remote)->lastModified();
+        if ($timeStamp !== null) {
+            $stat->setChangeDate($timeStamp);
             $stat->setExists(true);
         }
-        $metaData = $this->client->getMetadata($remote);
-        if ($metaData !== null && $metaData !== false) {
-            if ($metaData['type'] === 'file') {
-                $stat->setType(FileType::File());
-                $stat->setBytes($metaData['size']);
-            }
+        $metaData = $this->client->fileSize($remote);
+        if ($metaData->fileSize() !== null) {
+            $stat->setBytes($metaData->fileSize());
+            // TODO: how do we know the type (ATTRIBUTE_TYPE)
+//            if ($metaData['type'] === 'file') {
+//                $stat->setType(FileType::File());
+//                $stat->setBytes($metaData['size']);
+//            }
         }
 
         return $stat;
