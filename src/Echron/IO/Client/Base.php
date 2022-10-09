@@ -18,15 +18,14 @@ use function in_array;
 abstract class Base implements LoggerAwareInterface
 {
 
-    /** @var  LoggerInterface */
-    protected $logger;
+    protected ?LoggerInterface $logger = null;
 
     abstract public function push(string $local, string $remote, int $setRemoteChangeDate = null): FileTransferInfo;
 
     public function getLocalSize(string $local): int
     {
         return $this->getLocalFileStat($local)
-                    ->getBytes();
+            ->getBytes();
     }
 
     private $localFileChanged = [];
@@ -68,7 +67,7 @@ abstract class Base implements LoggerAwareInterface
     public function getRemoteChangeDate(string $remote): int
     {
         return $this->getRemoteFileStat($remote)
-                    ->getChangeDate();
+            ->getChangeDate();
     }
 
     abstract public function getRemoteFileStat(string $remote): FileStat;
@@ -76,13 +75,13 @@ abstract class Base implements LoggerAwareInterface
     public function getRemoteSize(string $remote): int
     {
         return $this->getRemoteFileStat($remote)
-                    ->getBytes();
+            ->getBytes();
     }
 
     public function getLocalChangeDate(string $local): int
     {
         return $this->getLocalFileStat($local)
-                    ->getChangeDate();
+            ->getChangeDate();
     }
 
     public final function pullLazy(string $remote, string $local): FileTransferInfo

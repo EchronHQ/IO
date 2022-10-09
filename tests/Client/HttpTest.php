@@ -35,7 +35,7 @@ class HttpTest extends \PHPUnit\Framework\TestCase
         $client = new \Echron\IO\Client\Http();
         $size = $client->getRemoteChangeDate('http://www.google.be/images/branding/googlelogo/2x/googlelogo_color_120x44dp.png');
 
-        $this->assertEquals(1481158857, $size);
+        $this->assertEquals(1571769000, $size);
     }
 
     public function testGetFileChangeDate_FileDoesNotExist()
