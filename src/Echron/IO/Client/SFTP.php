@@ -163,7 +163,7 @@ class SFTP extends Base
         if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
             $this->connect();
         }
-
+        //Not recursive: return $this->getClient()->delete($remotePath, false);
         return $this->sftpClient->delete($remote);
     }
 
@@ -335,15 +335,5 @@ class SFTP extends Base
         return $fileStat;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function deleteFile(string $remotePath): bool
-    {
-        if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
-            $this->connect();
-        }
 
-        return $this->getClient()->delete($remotePath, false);
-    }
 }
