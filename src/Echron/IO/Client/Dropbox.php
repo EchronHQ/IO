@@ -183,12 +183,4 @@ class Dropbox extends Base
     {
         throw new Exception('Not implemented');
     }
-
-    /**
-     * @inheritDoc
-     */
-    public function deleteFile(string $remotePath): bool
-    {
-        throw new Exception('Not implemented');
-    }
 }

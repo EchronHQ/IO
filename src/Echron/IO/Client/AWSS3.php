@@ -201,14 +201,6 @@ class AWSS3 extends Base
         throw new Exception('Not implemented');
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function deleteFile(string $remotePath): bool
-    {
-        throw new Exception('Not implemented');
-    }
-
     public function pull(string $remote, string $local, int $localChangeDate = null): FileTransferInfo
     {
         $result = $this->s3Client->getObject([
