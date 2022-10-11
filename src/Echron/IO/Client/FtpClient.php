@@ -109,8 +109,7 @@ class FtpClient extends Base
 
     public function remoteFileExists(string $remote): bool
     {
-        // TODO: Implement remoteFileExists() method.
-        throw new Exception('Not implemented');
+        return $this->client->fileExists($remote);
     }
 
     public function pull(string $remote, string $local, int $localChangeDate = null): FileTransferInfo
@@ -130,8 +129,8 @@ class FtpClient extends Base
 
     public function delete(string $remote): bool
     {
-        // TODO: Implement delete() method.
-        throw new Exception('Not implemented');
+        $this->client->delete($remote);
+        return true;
     }
 
     public function setRemoteChangeDate(string $remote, int $changeDate): bool
