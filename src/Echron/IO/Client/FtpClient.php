@@ -116,7 +116,16 @@ class FtpClient extends Base
     {
         $data = $this->client->read($remote);
 
-        $contents = $data['contents'];
+        if (\is_array($data)) {
+            if (isset($data['contents'])) {
+                $contents = $data['contents'];
+            } else {
+                throw new Exception('Unable to pull file (content is not defined)');
+            }
+        } else {
+            $contents = $data;
+        }
+
 
         $this->setLocalFileContent($local, $contents);
         if (!is_null($localChangeDate)) {
