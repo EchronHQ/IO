@@ -16,12 +16,14 @@
     "echron/datatypes": "^1.4.1",
     "phpseclib/phpseclib": "^3.0.0",
     "psr/simple-cache": "^3",
+    "psr/log": "^2.0 || ^3.0",
     "league/flysystem-ftp": "^3.15.0"
   },
   "suggest": {
     "kunalvarma05/dropbox-php-sdk": "Use the Dropbox client",
     "google/apiclient": "Use the Google Drive client",
-    "aws/aws-sdk-php": "Use the AWS client"
+    "aws/aws-sdk-php": "Use the AWS client",
+    "symfony/cache": "Use Symfony cache clients"
   },
   "autoload": {
     "psr-4": {

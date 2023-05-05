@@ -114,26 +114,33 @@ class FtpClient extends Base
 
     public function pull(string $remote, string $local, int $localChangeDate = null): FileTransferInfo
     {
-        $data = $this->client->read($remote);
+        try {
+            $data = $this->client->read($remote);
 
-        if (\is_array($data)) {
-            if (isset($data['contents'])) {
-                $contents = $data['contents'];
+            if (\is_array($data)) {
+                if (isset($data['contents'])) {
+                    $contents = $data['contents'];
+                } else {
+                    throw new Exception('Unable to pull file (content is not defined)');
+                }
             } else {
-                throw new Exception('Unable to pull file (content is not defined)');
+                $contents = $data;
             }
-        } else {
-            $contents = $data;
+
+
+            $this->setLocalFileContent($local, $contents);
+            if (!is_null($localChangeDate)) {
+                $this->setLocalChangeDate($local, $localChangeDate);
+            }
+
+            // TODO: determine transferred bytes
+            return new FileTransferInfo(true);
+        } catch (Exception $ex) {
+
+            throw new Exception('Unable to pull file `' . $remote . '` from remote', 0, $ex);
+
         }
 
-
-        $this->setLocalFileContent($local, $contents);
-        if (!is_null($localChangeDate)) {
-            $this->setLocalChangeDate($local, $localChangeDate);
-        }
-
-        // TODO: determine transferred bytes
-        return new FileTransferInfo(true);
     }
 
     public function delete(string $remote): bool

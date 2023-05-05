@@ -17,7 +17,7 @@ use function sha1;
 
 class Cache extends Base
 {
-    private $cache;
+    private CacheInterface $cache;
 
     public function __construct(CacheInterface $cache)
     {

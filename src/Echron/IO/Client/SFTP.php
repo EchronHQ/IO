@@ -21,11 +21,10 @@ class SFTP extends Base
 {
     private string $host;
     private string $username;
-    /** @var string|AsymmetricKey|null */
-    private $password;
+    private string|AsymmetricKey|null $password = null;
     private int $port;
     private int $timeout;
-    private ?SFTPClient $sftpClient = null;
+    private SFTPClient|null $sftpClient = null;
 
     public function __construct(string $host, int $port = 22, int $timeout = 30)
     {
@@ -45,7 +44,7 @@ class SFTP extends Base
         $this->password = $password;
     }
 
-    public function loginWithKey(string $username, string $keyFilePath, string $keyFilePassword = null): void
+    public function loginWithKey(string $username, string $keyFilePath, string|null $keyFilePassword = null): void
     {
         if (!file_exists($keyFilePath)) {
             $maskedKeyFile = FileHelper::maskFileName($keyFilePath);

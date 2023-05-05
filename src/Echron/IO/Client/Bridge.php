@@ -10,7 +10,8 @@ use Exception;
 
 class Bridge extends Base
 {
-    private $master, $slave;
+    private Base $master;
+    private Base $slave;
 
     public function __construct(Base $master, Base $slave)
     {

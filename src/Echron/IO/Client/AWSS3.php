@@ -190,7 +190,7 @@ class AWSS3 extends Base
     public function remoteFileExists(string $remote): bool
     {
         return $this->getRemoteFileStat($remote)
-                    ->getExists();
+            ->getExists();
     }
 
     /**

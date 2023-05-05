@@ -13,9 +13,9 @@ use function is_null;
 
 class Http extends Base
 {
-    private $guzzleClient;
+    private GuzzleClient $guzzleClient;
 
-    private $basicAuth;
+    private array|null $basicAuth = null;
 
     public function __construct(array $guzzleClientConfig = [])
     {
@@ -48,7 +48,7 @@ class Http extends Base
 
         $response = $this->guzzleClient->request('GET', $remote, $options);
         $contents = $response->getBody()
-                             ->getContents();
+            ->getContents();
         $this->setLocalFileContent($local, $contents);
 
         if (!is_null($localChangeDate)) {
