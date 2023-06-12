@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 use Echron\IO\Client\Base;
@@ -8,7 +9,6 @@ require_once 'AbstractTest.php';
 
 class SFTPTest extends AbstractTest
 {
-
     protected function getClient(): Base
     {
         $host = 'sftp-test';

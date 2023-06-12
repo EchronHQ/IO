@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Echron\IO\Client;
@@ -11,8 +12,10 @@ use Exception;
 use Google_Service_Drive;
 use Google_Service_Drive_DriveFile;
 use GuzzleHttp\Psr7\Response;
+
 use function class_exists;
 use function is_null;
+
 use const PHP_EOL;
 
 /**
@@ -21,7 +24,6 @@ use const PHP_EOL;
  */
 class GoogleDrive extends Base
 {
-
     private $client;
     private $service;
     private $credentialsFilePath;

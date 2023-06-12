@@ -1,9 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Echron\IO\Data;
 
 use InvalidArgumentException;
+
 use function implode;
 
 class FileStat

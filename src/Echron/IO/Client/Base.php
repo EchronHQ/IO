@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Echron\IO\Client;
@@ -11,13 +12,13 @@ use Echron\Tools\FileSystem;
 use Exception;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
+
 use function file_exists;
 use function file_put_contents;
 use function in_array;
 
 abstract class Base implements LoggerAwareInterface
 {
-
     protected LoggerInterface|null $logger = null;
     private array $localFileChanged = [];
 

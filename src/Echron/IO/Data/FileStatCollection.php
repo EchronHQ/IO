@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Echron\IO\Data;
@@ -25,7 +26,7 @@ class FileStatCollection implements \IteratorAggregate, \Countable
         return new \ArrayIterator($this->collection);
     }
 
-    public function count()
+    public function count(): int
     {
         return count($this->collection);
     }
@@ -33,7 +34,7 @@ class FileStatCollection implements \IteratorAggregate, \Countable
     public static function sortByName(FileStatCollection $collection): FileStatCollection
     {
         $data = $collection->getIterator()
-                           ->getArrayCopy();
+            ->getArrayCopy();
 
         \uasort($data, function (FileStat $a, FileStat $b): int {
             return strcmp($a->getPath(), $b->getPath());

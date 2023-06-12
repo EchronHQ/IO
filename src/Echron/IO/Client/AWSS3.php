@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Echron\IO\Client;
@@ -11,6 +12,7 @@ use Echron\IO\Data\FileStatCollection;
 use Echron\IO\Data\FileTransferInfo;
 use Exception;
 use GuzzleHttp\Psr7\Stream;
+
 use function class_exists;
 use function is_null;
 
@@ -19,7 +21,9 @@ use function is_null;
  */
 class AWSS3 extends Base
 {
-    private $s3Client, $bucket, $region = 'eu-west-1';
+    private $s3Client;
+    private $bucket;
+    private $region = 'eu-west-1';
 
     public function __construct(string $bucket, $credentials, string $region = 'eu-west-1')
     {
@@ -33,6 +37,11 @@ class AWSS3 extends Base
             'region'      => $this->region,
             'credentials' => $credentials,
         ]);
+    }
+
+    public function getBucket(): string
+    {
+        return $this->bucket;
     }
 
     public function push(string $local, string $remote, int $setRemoteChangeDate = null): FileTransferInfo

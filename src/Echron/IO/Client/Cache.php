@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Echron\IO\Client;
@@ -8,6 +9,7 @@ use Echron\IO\Data\FileStatCollection;
 use Echron\IO\Data\FileTransferInfo;
 use Exception;
 use Psr\SimpleCache\CacheInterface;
+
 use function base64_decode;
 use function base64_encode;
 use function file_exists;

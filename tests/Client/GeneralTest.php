@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 class GeneralTest extends \PHPUnit\Framework\TestCase
@@ -21,7 +22,7 @@ class GeneralTest extends \PHPUnit\Framework\TestCase
 
     public function testLocalGetFileSize_FileDoesNotExist()
     {
-        $this->assertFileNotExists($this->nonExistingTestFile);
+        $this->assertFileDoesNotExist($this->nonExistingTestFile);
 
         $client = new \Echron\IO\Client\Http();
         $size = $client->getRemoteSize($this->nonExistingTestFile);
@@ -41,7 +42,7 @@ class GeneralTest extends \PHPUnit\Framework\TestCase
 
     public function testLocalGetFileChangeDate_FileDoesNotExist()
     {
-        $this->assertFileNotExists($this->nonExistingTestFile);
+        $this->assertFileDoesNotExist($this->nonExistingTestFile);
 
         $client = new \Echron\IO\Client\Http();
         $size = $client->getLocalChangeDate($this->nonExistingTestFile);

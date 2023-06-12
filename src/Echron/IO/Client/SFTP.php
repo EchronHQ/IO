@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Echron\IO\Client;
@@ -13,6 +14,7 @@ use Exception;
 use phpseclib3\Crypt\Common\AsymmetricKey;
 use phpseclib3\Crypt\RSA;
 use phpseclib3\Net\SFTP as SFTPClient;
+
 use function file_exists;
 use function file_get_contents;
 use function is_null;
@@ -182,8 +184,7 @@ class SFTP extends Base
         string $local,
         int    $localChangeDate = null,
         bool   $showProgress = false
-    ): FileTransferInfo
-    {
+    ): FileTransferInfo {
         if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
             $this->connect();
         }
@@ -241,7 +242,8 @@ class SFTP extends Base
     public function setClient(SFTPClient $sftpClient, bool $disconnectIfClientExists = true): void
     {
         if ($disconnectIfClientExists && !is_null($this->sftpClient) && $this->sftpClient->isConnected()) {
-            $this->sftpClient->disconnect();;
+            $this->sftpClient->disconnect();
+            ;
         }
         $this->sftpClient = $sftpClient;
     }

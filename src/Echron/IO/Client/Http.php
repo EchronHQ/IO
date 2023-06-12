@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Echron\IO\Client;
@@ -9,6 +10,7 @@ use Echron\IO\Data\FileTransferInfo;
 use Exception;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\ClientInterface;
+
 use function is_null;
 
 class Http extends Base

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Echron\IO\Client;
@@ -13,8 +14,10 @@ use Kunnu\Dropbox\DropboxFile;
 use Kunnu\Dropbox\Exceptions\DropboxClientException;
 use Kunnu\Dropbox\Models\FileMetadata;
 use Kunnu\Dropbox\Models\FolderMetadata;
+
 use function class_exists;
 use function is_null;
+
 use const PHP_EOL;
 
 /**
@@ -22,7 +25,9 @@ use const PHP_EOL;
  */
 class Dropbox extends Base
 {
-    private $clientId, $clientSecret, $accessToken;
+    private $clientId;
+    private $clientSecret;
+    private $accessToken;
     /** @var DropboxApp DropboxApp */
     private $dropboxClient;
 

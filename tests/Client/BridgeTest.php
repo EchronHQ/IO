@@ -1,10 +1,10 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 require_once 'AbstractTest.php';
 
 class BridgeTest extends AbstractTest
 {
-
     public function testPushFromMasterToSlave()
     {
 
