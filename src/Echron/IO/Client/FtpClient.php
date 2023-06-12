@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Echron\IO\Client;
@@ -11,6 +12,7 @@ use Exception;
 
 use League\Flysystem\Ftp\FtpAdapter;
 use League\Flysystem\Ftp\FtpConnectionOptions;
+
 use function is_null;
 
 class FtpClient extends Base
@@ -32,8 +34,7 @@ class FtpClient extends Base
         int    $port = 21,
         bool   $passive = false,
         bool   $autoConnect = false
-    )
-    {
+    ) {
         $this->_host = $host;
         $this->_username = $username;
         $this->_password = $password;
@@ -58,7 +59,7 @@ class FtpClient extends Base
             ]
         );
         $this->client = new FtpAdapter($config);
-//        $this->client->setTimeout(5);
+        //        $this->client->setTimeout(5);
 
         //$this->client->setRoot('/');
 
@@ -70,7 +71,7 @@ class FtpClient extends Base
 
     private function connect()
     {
-//        $this->client->getConnection();
+        //        $this->client->getConnection();
     }
 
     public function push(string $local, string $remote, int $setRemoteChangeDate = null): FileTransferInfo
@@ -98,10 +99,10 @@ class FtpClient extends Base
         if ($metaData->fileSize() !== null) {
             $stat->setBytes($metaData->fileSize());
             // TODO: how do we know the type (ATTRIBUTE_TYPE)
-//            if ($metaData['type'] === 'file') {
-//                $stat->setType(FileType::File());
-//                $stat->setBytes($metaData['size']);
-//            }
+            //            if ($metaData['type'] === 'file') {
+            //                $stat->setType(FileType::File());
+            //                $stat->setBytes($metaData['size']);
+            //            }
         }
 
         return $stat;
@@ -114,26 +115,33 @@ class FtpClient extends Base
 
     public function pull(string $remote, string $local, int $localChangeDate = null): FileTransferInfo
     {
-        $data = $this->client->read($remote);
+        try {
+            $data = $this->client->read($remote);
 
-        if (\is_array($data)) {
-            if (isset($data['contents'])) {
-                $contents = $data['contents'];
+            if (\is_array($data)) {
+                if (isset($data['contents'])) {
+                    $contents = $data['contents'];
+                } else {
+                    throw new Exception('Unable to pull file (content is not defined)');
+                }
             } else {
-                throw new Exception('Unable to pull file (content is not defined)');
+                $contents = $data;
             }
-        } else {
-            $contents = $data;
+
+
+            $this->setLocalFileContent($local, $contents);
+            if (!is_null($localChangeDate)) {
+                $this->setLocalChangeDate($local, $localChangeDate);
+            }
+
+            // TODO: determine transferred bytes
+            return new FileTransferInfo(true);
+        } catch (Exception $ex) {
+
+            throw new Exception('Unable to pull file `' . $remote . '` from remote', 0, $ex);
+
         }
 
-
-        $this->setLocalFileContent($local, $contents);
-        if (!is_null($localChangeDate)) {
-            $this->setLocalChangeDate($local, $localChangeDate);
-        }
-
-        // TODO: determine transferred bytes
-        return new FileTransferInfo(true);
     }
 
     public function delete(string $remote): bool

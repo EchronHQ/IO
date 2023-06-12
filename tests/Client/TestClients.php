@@ -1,9 +1,102 @@
 <?php
 
 declare(strict_types=1);
+require_once 'AbstractTest.php';
 
-abstract class AbstractTest extends \PHPUnit\Framework\TestCase
+class TestClients extends \PHPUnit\Framework\TestCase
 {
+    /**
+     * @var array \Echron\IO\Client\Base[]
+     */
+    private array $clients;
+
+
+    protected function getRemoteTestFilePath(): string
+    {
+        return 'test';
+    }
+
+    protected function getRemoteTestFileContent(): string
+    {
+        return '';
+    }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->clients = [
+            $this->getFTPClient(),
+            //            $this->getAWSS3Client(),
+        ];
+
+        /**
+         * FTP
+         */
+
+
+    }
+
+    private function getAWSS3Client(): \Echron\IO\Client\AWSS3
+    {
+        $credentials = [
+            'key'    => 'AKIAJLWY2ODOND3HSPSQ',
+            'secret' => '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',
+        ];
+
+        $bucket = 'io.test2';
+        $client = new \Echron\IO\Client\AWSS3($bucket, $credentials);
+
+        try {
+            $client->createBucket($bucket);
+        } catch (\Aws\S3\Exception\S3Exception $ex) {
+            throw new Exception('Unable to set up AWSS3 Bucket');
+            //            $this->markTestSkipped(
+            //                'Unable to set up AWSS3 Bucket'
+            //            );
+        }
+        return $client;
+
+    }
+
+    private function getFTPClient(): \Echron\IO\Client\FtpClient
+    {
+
+        //        $host = 'sftp-test';
+        //        $port = 22;
+        //        $client = new SFTP($host, $port);
+        //        $client->loginWithPassword('demo', 'demo');
+
+
+        $host = 'ftp.asuivrebe.webhosting.be';
+        $port = 21;
+        $user = 'asuivrebe@asuivrebe';
+        $password = 'R4ZR7g3YjdkzJqfr';
+        $passive = true;
+        $client = new \Echron\IO\Client\FtpClient($host, $user, $password, $port, $passive);
+
+        return $client;
+
+    }
+
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+
+        foreach ($this->clients as $client) {
+            try {
+                if ($client instanceof \Echron\IO\Client\AWSS3) {
+                    $client->clearBucket($client->getBucket());
+                    $client->deleteBucket($client->getBucket());
+                }
+            } catch (\Aws\S3\Exception\S3Exception $ex) {
+                echo 'EX: ' . $ex->getMessage() . PHP_EOL;
+            }
+        }
+    }
+
+
     public function testPushFile()
     {
         return;

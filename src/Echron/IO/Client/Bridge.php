@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Echron\IO\Client;
@@ -10,7 +11,8 @@ use Exception;
 
 class Bridge extends Base
 {
-    private $master, $slave;
+    private Base $master;
+    private Base $slave;
 
     public function __construct(Base $master, Base $slave)
     {

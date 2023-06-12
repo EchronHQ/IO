@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 class HttpTest extends \PHPUnit\Framework\TestCase
@@ -7,7 +8,7 @@ class HttpTest extends \PHPUnit\Framework\TestCase
     {
         $destination = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'googlelogo' . gmdate('U');
 
-        $this->assertFileNotExists($destination);
+        $this->assertFileDoesNotExist($destination);
         $client = new \Echron\IO\Client\Http();
         $client->pull('http://www.google.be/images/branding/googlelogo/2x/googlelogo_color_120x44dp.png', $destination);
 

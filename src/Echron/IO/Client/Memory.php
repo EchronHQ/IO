@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Echron\IO\Client;
@@ -7,11 +8,12 @@ use Echron\IO\Data\FileStat;
 use Echron\IO\Data\FileStatCollection;
 use Echron\IO\Data\FileTransferInfo;
 use Exception;
+
 use function is_null;
 
 class Memory extends Base
 {
-    private $files;
+    private array $files;
 
     public function __construct()
     {

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Echron\IO\Client;
@@ -11,14 +12,15 @@ use Echron\Tools\FileSystem;
 use Exception;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
+
 use function file_exists;
 use function file_put_contents;
 use function in_array;
 
 abstract class Base implements LoggerAwareInterface
 {
-
-    protected ?LoggerInterface $logger = null;
+    protected LoggerInterface|null $logger = null;
+    private array $localFileChanged = [];
 
     abstract public function push(string $local, string $remote, int $setRemoteChangeDate = null): FileTransferInfo;
 
@@ -28,16 +30,15 @@ abstract class Base implements LoggerAwareInterface
             ->getBytes();
     }
 
-    private $localFileChanged = [];
 
-    public function setLocalFileContent(string $local, string $contents)
+    public function setLocalFileContent(string $local, string $contents): void
     {
         file_put_contents($local, $contents);
 
         $this->localFileChanged[] = $local;
     }
 
-    public function flushLocalStatCache(string $local = null)
+    public function flushLocalStatCache(string $local = null): void
     {
         clearstatcache(false, $local);
     }
@@ -84,7 +85,7 @@ abstract class Base implements LoggerAwareInterface
             ->getChangeDate();
     }
 
-    public final function pullLazy(string $remote, string $local): FileTransferInfo
+    final public function pullLazy(string $remote, string $local): FileTransferInfo
     {
         if (!$this->remoteFileExists($remote)) {
             throw new Exception('Unable to pull file: remote file `' . $remote . '` does not exist');
@@ -112,7 +113,7 @@ abstract class Base implements LoggerAwareInterface
         }
     }
 
-    public final function pushLazy(string $local, string $remote): FileTransferInfo
+    final public function pushLazy(string $local, string $remote): FileTransferInfo
     {
         if (!file_exists($local)) {
             throw new Exception('Unable to push file: local file `' . $local . '` does not exist');
