@@ -26,6 +26,5 @@ When doing lazy transfer, show that in the transaction result
 docker run -it -v ${PWD}:/app -w /app --rm attlaz/php:8.1 composer outdated -D
 docker run -it -v ${PWD}:/app -w /app --rm attlaz/php:8.1 composer update
 
-# Run PHPSTan
-
+# Run PHPStan
 docker run -it -v .:/app -w /app --rm attlaz/php:8.1 composer run-script phpstan
