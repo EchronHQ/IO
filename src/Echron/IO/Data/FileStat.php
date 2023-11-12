@@ -5,16 +5,15 @@ declare(strict_types=1);
 namespace Echron\IO\Data;
 
 use InvalidArgumentException;
-
 use function implode;
 
 class FileStat
 {
-    private $path = '';
-    private $bytes = -1;
-    private $changeDate = -1;
-    private $exists = false;
-    private $type;
+    private string $path = '';
+    private int $bytes = -1;
+    private int $changeDate = -1;
+    private bool $exists = false;
+    private FileType $type;
 
     public function __construct(string $path, FileType $type = null)
     {
@@ -23,8 +22,8 @@ class FileStat
         }
         $this->path = $path;
 
-        if (is_null($type)) {
-            $type = FileType::Unknown();
+        if ($type === null) {
+            $type = FileType::Unknown;
         }
         $this->type = $type;
     }
@@ -101,7 +100,7 @@ class FileStat
             $output[] = 'Changedate: unknown';
         }
         $output[] = 'Exists: ' . ($this->exists ? 'Y' : 'N');
-        $output[] = 'Type: ' . $this->type->getValue();
+        $output[] = 'Type: ' . $this->type->name;
 
         if ($this->bytes !== -1) {
             $output[] = 'Bytes: ' . $this->bytes;

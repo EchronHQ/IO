@@ -12,10 +12,8 @@ use Exception;
 use Google_Service_Drive;
 use Google_Service_Drive_DriveFile;
 use GuzzleHttp\Psr7\Response;
-
 use function class_exists;
 use function is_null;
-
 use const PHP_EOL;
 
 /**
@@ -46,7 +44,7 @@ class GoogleDrive extends Base
         $this->service = new Google_Service_Drive($this->client);
     }
 
-    public function getAccessTokenStep1()
+    public function getAccessTokenStep1(): void
     {
         $authUrl = $this->getClient()
             ->createAuthUrl();
@@ -54,7 +52,7 @@ class GoogleDrive extends Base
         echo 'Auth: ' . $authUrl . PHP_EOL;
     }
 
-    public function getAccessTokenStep2(string $authCode)
+    public function getAccessTokenStep2(string $authCode): void
     {
         $accessToken = $this->getClient()
             ->fetchAccessTokenWithAuthCode($authCode);
@@ -62,7 +60,7 @@ class GoogleDrive extends Base
         echo 'Accesstoken: ' . $accessToken['access_token'] . PHP_EOL;
     }
 
-    private function getClient()
+    private function getClient(): Google_Client
     {
         $client = new Google_Client();
         $client->setApplicationName('Echron IO lib');
@@ -91,10 +89,10 @@ class GoogleDrive extends Base
         $contents = file_get_contents($local);
 
         $options = [
-            'data'       => $contents,
+            'data' => $contents,
             //            'mimeType'   => 'image/jpeg',
             'uploadType' => 'multipart',
-            'fields'     => 'id',
+            'fields' => 'id',
         ];
 
         if (!is_null($setRemoteChangeDate)) {
@@ -110,7 +108,7 @@ class GoogleDrive extends Base
 
     private function formatTime(int $time): string
     {
-        return strftime('%Y-%m-%dT%H:%M:%SZ', $time);
+        return date('%Y-%m-%dT%H:%M:%SZ', $time);
     }
 
     public function getRemoteFileStat(string $remote): FileStat
@@ -122,11 +120,11 @@ class GoogleDrive extends Base
 
         if (!is_null($googleDriveFile)) {
             $googleDriveFile = $this->service->files->get($googleDriveFile->getId(), ['fields' => 'size,modifiedTime']);
-            $type = FileType::File();
+            $type = FileType::File;
 
-            $bytes = intval($googleDriveFile->getSize());
+            $bytes = (int)$googleDriveFile->getSize();
 
-            $changedate = intval(strtotime($googleDriveFile->getModifiedTime()));
+            $changedate = (int)strtotime($googleDriveFile->getModifiedTime());
 
             $stat->setExists(true);
             $stat->setBytes($bytes);

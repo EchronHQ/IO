@@ -14,7 +14,6 @@ use Exception;
 use phpseclib3\Crypt\Common\AsymmetricKey;
 use phpseclib3\Crypt\RSA;
 use phpseclib3\Net\SFTP as SFTPClient;
-
 use function file_exists;
 use function file_get_contents;
 use function is_null;
@@ -22,7 +21,7 @@ use function is_null;
 class SFTP extends Base
 {
     private string $host;
-    private string $username;
+    private string|null $username = null;
     private string|AsymmetricKey|null $password = null;
     private int $port;
     private int $timeout;
@@ -70,6 +69,12 @@ class SFTP extends Base
             $this->sftpClient->disconnect();
         }
         $this->sftpClient = new SFTPClient($this->host, $this->port, $this->timeout);
+        if ($this->username === null) {
+            throw new Exception('Username must be defined');
+        }
+        if ($this->password === null) {
+            throw new Exception('Password must be defined');
+        }
         $authenticated = $this->sftpClient->login($this->username, $this->password);
         if (!$authenticated) {
             $this->sftpClient = null;
@@ -144,19 +149,11 @@ class SFTP extends Base
         //        if (!$this->sftpClient->isConnected()) {
         //            $this->connectClient();
         //        }
-        $parsedType = FileType::Unknown();
-        switch ($sftpType) {
-            case 'file':
-                $parsedType = FileType::File();
-                break;
-            case 'dir':
-                $parsedType = FileType::Dir();
-                break;
-            default:
-                throw new Exception('Unknown SFTP file type "' . $sftpType . '"');
-        }
-
-        return $parsedType;
+        return match ($sftpType) {
+            'file' => FileType::File,
+            'dir' => FileType::Dir,
+            default => throw new Exception('Unknown SFTP file type "' . $sftpType . '"'),
+        };
     }
 
     public function delete(string $remote): bool
@@ -184,7 +181,8 @@ class SFTP extends Base
         string $local,
         int    $localChangeDate = null,
         bool   $showProgress = false
-    ): FileTransferInfo {
+    ): FileTransferInfo
+    {
         if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
             $this->connect();
         }
@@ -234,7 +232,7 @@ class SFTP extends Base
         }
     }
 
-    public function getClient(): ?SFTPClient
+    public function getClient(): SFTPClient|null
     {
         return $this->sftpClient;
     }
@@ -243,7 +241,6 @@ class SFTP extends Base
     {
         if ($disconnectIfClientExists && !is_null($this->sftpClient) && $this->sftpClient->isConnected()) {
             $this->sftpClient->disconnect();
-            ;
         }
         $this->sftpClient = $sftpClient;
     }
@@ -310,13 +307,13 @@ class SFTP extends Base
         $fileStat = new FileStat($path);
 
         $rawType = $rawFile['type'];
-        $type = FileType::Unknown();
+        $type = FileType::Unknown;
         switch ($rawType) {
             case 1:
-                $type = FileType::File();
+                $type = FileType::File;
                 break;
             case 2:
-                $type = FileType::Dir();
+                $type = FileType::Dir;
                 break;
             default:
                 echo 'Unknown file type ' . $rawType . \PHP_EOL;

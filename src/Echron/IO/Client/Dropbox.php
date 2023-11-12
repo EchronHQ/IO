@@ -14,10 +14,8 @@ use Kunnu\Dropbox\DropboxFile;
 use Kunnu\Dropbox\Exceptions\DropboxClientException;
 use Kunnu\Dropbox\Models\FileMetadata;
 use Kunnu\Dropbox\Models\FolderMetadata;
-
 use function class_exists;
 use function is_null;
-
 use const PHP_EOL;
 
 /**
@@ -47,23 +45,23 @@ class Dropbox extends Base
         $this->dropboxClient = new \Kunnu\Dropbox\Dropbox($dropboxApp);
     }
 
-    public function getAccessTokenStep1()
+    public function getAccessTokenStep1(): void
     {
         $authHelper = $this->dropboxClient->getAuthHelper();
         $authUrl = $authHelper->getAuthUrl($this->callbackUrl);
 
         $state = $authHelper->getPersistentDataStore()
-                            ->get('state');
+            ->get('state');
         echo 'State: ' . $state . PHP_EOL;
         echo 'Auth url: ' . $authUrl . PHP_EOL;
     }
 
-    public function getAccessTokenStep2(string $state, string $code)
+    public function getAccessTokenStep2(string $state, string $code): void
     {
         $authHelper = $this->dropboxClient->getAuthHelper();
 
         $authHelper->getPersistentDataStore()
-                   ->set('state', $state);
+            ->set('state', $state);
         $accessToken = $authHelper->getAccessToken($code, $state, $this->callbackUrl);
         echo 'AccessToken: ' . $accessToken->getToken() . PHP_EOL;
     }
@@ -79,7 +77,7 @@ class Dropbox extends Base
         $options = [
             'autorename' => false,
             // 'client_modified' => $this->formatTime($modificationTime),
-            'mute'       => false,
+            'mute' => false,
         ];
 
         if (!is_null($setRemoteChangeDate)) {
@@ -94,7 +92,7 @@ class Dropbox extends Base
 
     private function formatTime(int $time): string
     {
-        return strftime('%Y-%m-%dT%H:%M:%SZ', $time);
+        return date('%Y-%m-%dT%H:%M:%SZ', $time);
     }
 
     public function getRemoteFileStat(string $remote): FileStat
@@ -113,14 +111,10 @@ class Dropbox extends Base
 
             $dropboxType = $metaData->getDataProperty('.tag');
 
-            $type = FileType::Unknown();
-            switch ($dropboxType) {
-                case 'file':
-                    $type = FileType::File();
-                    break;
-                default:
-                    throw new Exception('Unknown Dropbox type "' . $dropboxType . '"');
-            }
+            $type = match ($dropboxType) {
+                'file' => FileType::File,
+                default => throw new Exception('Unknown Dropbox type "' . $dropboxType . '"'),
+            };
             $fileStat->setType($type);
         }
 
@@ -130,14 +124,14 @@ class Dropbox extends Base
     public function remoteFileExists(string $remote): bool
     {
         return $this->getRemoteFileStat($remote)
-                    ->getExists();
+            ->getExists();
     }
 
     /**
      * @param string $remote
      * @return FileMetadata|FolderMetadata|null
      */
-    private function getMetaData(string $remote)
+    private function getMetaData(string $remote): FileMetadata|FolderMetadata|null
     {
         try {
             return $this->dropboxClient->getMetadata($remote);

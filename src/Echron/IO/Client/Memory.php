@@ -8,16 +8,14 @@ use Echron\IO\Data\FileStat;
 use Echron\IO\Data\FileStatCollection;
 use Echron\IO\Data\FileTransferInfo;
 use Exception;
-
 use function is_null;
 
 class Memory extends Base
 {
-    private array $files;
+    private array $files = [];
 
     public function __construct()
     {
-        $this->files = [];
     }
 
     public function push(string $local, string $remote, int $setRemoteChangeDate = null): FileTransferInfo
@@ -99,20 +97,21 @@ class Memory extends Base
 
     public function pull(string $remote, string $local, int $localChangeDate = null): FileTransferInfo
     {
-        if ($this->remoteFileExists($remote)) {
-            $file = $this->getFile($remote);
-            $contents = $file['data'];
-
-            $this->setLocalFileContent($local, $contents);
-            if (!is_null($localChangeDate)) {
-                $this->setLocalChangeDate($local, $localChangeDate);
-            }
-
-            // TODO: determine transferred bytes
-            return new FileTransferInfo(true);
-        } else {
+        if (!$this->remoteFileExists($remote)) {
             throw new Exception('Unable to pull file: remote "' . $remote . '" does not exist');
         }
+        $file = $this->getFile($remote);
+        $contents = $file['data'];
+
+        $this->setLocalFileContent($local, $contents);
+        if (!is_null($localChangeDate)) {
+            $this->setLocalChangeDate($local, $localChangeDate);
+        }
+
+        // TODO: determine transferred bytes
+        return new FileTransferInfo(true);
+
+
     }
 
     public function setRemoteChangeDate(string $remote, int $changeDate): bool

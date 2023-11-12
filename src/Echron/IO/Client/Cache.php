@@ -9,7 +9,6 @@ use Echron\IO\Data\FileStatCollection;
 use Echron\IO\Data\FileTransferInfo;
 use Exception;
 use Psr\SimpleCache\CacheInterface;
-
 use function base64_decode;
 use function base64_encode;
 use function file_exists;
@@ -70,9 +69,7 @@ class Cache extends Base
 
     public function remoteFileExists(string $remote): bool
     {
-        $fileStat = $this->getRemoteFileStat($remote);
-
-        return $fileStat->getExists();
+        return $this->getRemoteFileStat($remote)->getExists();
     }
 
     public function pull(string $remote, string $local, int $localChangeDate = null): FileTransferInfo

@@ -97,7 +97,7 @@ class Bridge extends Base
         return $this->slave->delete($remote);
     }
 
-    public function moveRemoteFile(string $remoteSource, string $remoteDestination)
+    public function moveRemoteFile(string $remoteSource, string $remoteDestination): void
     {
         throw new Exception('Not implemented');
     }
@@ -112,7 +112,7 @@ class Bridge extends Base
         return $this->master->remoteFileExists($masterPath);
     }
 
-    public function setLocaleChangeDate(string $masterPath, int $date)
+    public function setLocaleChangeDate(string $masterPath, int $date): bool
     {
         return $this->master->setRemoteChangeDate($masterPath, $date);
     }

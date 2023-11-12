@@ -6,14 +6,15 @@ namespace Echron\IO\Data;
 
 class FileStatCollection implements \IteratorAggregate, \Countable
 {
-    private $collection;
+    /** @var FileStat[] */
+    private array $collection;
 
     public function __construct()
     {
         $this->collection = [];
     }
 
-    public function add(FileStat $fileStat)
+    public function add(FileStat $fileStat): void
     {
         $this->collection[] = $fileStat;
     }

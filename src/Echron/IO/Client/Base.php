@@ -12,7 +12,6 @@ use Echron\Tools\FileSystem;
 use Exception;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
-
 use function file_exists;
 use function file_put_contents;
 use function in_array;
@@ -59,7 +58,7 @@ abstract class Base implements LoggerAwareInterface
             $stat->setChangeDate($fileModificationTime);
             $stat->setBytes($fileSize);
             //TODO: determine file type
-            $stat->setType(FileType::File());
+            $stat->setType(FileType::File);
         }
 
         return $stat;
@@ -89,64 +88,64 @@ abstract class Base implements LoggerAwareInterface
     {
         if (!$this->remoteFileExists($remote)) {
             throw new Exception('Unable to pull file: remote file `' . $remote . '` does not exist');
-        } else {
-            $remoteFileStat = $this->getRemoteFileStat($remote);
-            $localFileStat = $this->getLocalFileStat($local);
-
-            //TODO: when datetime is different or only when remote file is newer?
-            if (!$localFileStat->equals($remoteFileStat)) {
-                // TODO: use $downloaded to determine if file was really downloaded or not
-                $downloaded = $this->pull($remote, $local, $remoteFileStat->getChangeDate());
-                //                if ($downloaded) {
-                //                $this->setLocalChangeDate($local, $remoteFileStat->getChangeDate());
-                // TODO: check transferred bytes
-                $result = new FileTransferInfo(true);
-                $result->setLazyTransfer(true, true);
-
-                return $result;
-            } else {
-                $result = new FileTransferInfo(true);
-                $result->setLazyTransfer(true, false);
-
-                return $result;
-            }
         }
+        $remoteFileStat = $this->getRemoteFileStat($remote);
+        $localFileStat = $this->getLocalFileStat($local);
+
+        //TODO: when datetime is different or only when remote file is newer?
+        if (!$localFileStat->equals($remoteFileStat)) {
+            // TODO: use $downloaded to determine if file was really downloaded or not
+            $downloaded = $this->pull($remote, $local, $remoteFileStat->getChangeDate());
+            //                if ($downloaded) {
+            //                $this->setLocalChangeDate($local, $remoteFileStat->getChangeDate());
+            // TODO: check transferred bytes
+            $result = new FileTransferInfo(true);
+            $result->setLazyTransfer(true, true);
+
+            return $result;
+        }
+        $result = new FileTransferInfo(true);
+        $result->setLazyTransfer(true, false);
+
+        return $result;
+
+
     }
 
     final public function pushLazy(string $local, string $remote): FileTransferInfo
     {
         if (!file_exists($local)) {
             throw new Exception('Unable to push file: local file `' . $local . '` does not exist');
-        } else {
-            $remoteFileStat = $this->getRemoteFileStat($remote);
-            $localFileStat = $this->getLocalFileStat($local);
-
-            //            echo 'Push lazy (' . $local . ' > ' . $remote . '):' . PHP_EOL . "\t" . 'Local:  ' . $localFileStat->debug() . PHP_EOL . "\t" . 'Remote: ' . $remoteFileStat->debug() . '' . PHP_EOL;
-
-            //echo 'Lazy' . \PHP_EOL;
-
-            if (!$remoteFileStat->equals($localFileStat)) {
-                //                echo "\t" . 'Upload needed' . PHP_EOL;
-                $uploaded = $this->push($local, $remote, $localFileStat->getChangeDate());
-                // if ($uploaded) {
-                //                    echo "\t" . 'Set change date' . \PHP_EOL;
-                //                    $this->setRemoteChangeDate($remote, $localFileStat->getChangeDate());
-
-                // TODO: check transferred bytes
-                $result = new FileTransferInfo(true);
-                $result->setLazyTransfer(true, true);
-
-                return $result;
-                //                } else {
-                //                    return false;
-                //                }
-            } else {
-                $result = new FileTransferInfo(true);
-                $result->setLazyTransfer(true, false);
-
-                return $result;
-            }
         }
+        $remoteFileStat = $this->getRemoteFileStat($remote);
+        $localFileStat = $this->getLocalFileStat($local);
+
+        //            echo 'Push lazy (' . $local . ' > ' . $remote . '):' . PHP_EOL . "\t" . 'Local:  ' . $localFileStat->debug() . PHP_EOL . "\t" . 'Remote: ' . $remoteFileStat->debug() . '' . PHP_EOL;
+
+        //echo 'Lazy' . \PHP_EOL;
+
+        if (!$remoteFileStat->equals($localFileStat)) {
+            //                echo "\t" . 'Upload needed' . PHP_EOL;
+            $uploaded = $this->push($local, $remote, $localFileStat->getChangeDate());
+            // if ($uploaded) {
+            //                    echo "\t" . 'Set change date' . \PHP_EOL;
+            //                    $this->setRemoteChangeDate($remote, $localFileStat->getChangeDate());
+
+            // TODO: check transferred bytes
+            $result = new FileTransferInfo(true);
+            $result->setLazyTransfer(true, true);
+
+            return $result;
+            //                } else {
+            //                    return false;
+            //                }
+        }
+        $result = new FileTransferInfo(true);
+        $result->setLazyTransfer(true, false);
+
+        return $result;
+
+
     }
 
     abstract public function remoteFileExists(string $remote): bool;
