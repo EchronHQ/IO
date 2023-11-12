@@ -9,10 +9,8 @@ use Echron\IO\Data\FileStatCollection;
 use Echron\IO\Data\FileTransferInfo;
 use Echron\IO\Data\FileType;
 use Exception;
-
 use League\Flysystem\Ftp\FtpAdapter;
 use League\Flysystem\Ftp\FtpConnectionOptions;
-
 use function is_null;
 
 class FtpClient extends Base
@@ -34,7 +32,8 @@ class FtpClient extends Base
         int    $port = 21,
         bool   $passive = false,
         bool   $autoConnect = false
-    ) {
+    )
+    {
         $this->_host = $host;
         $this->_username = $username;
         $this->_password = $password;
@@ -46,16 +45,16 @@ class FtpClient extends Base
 
         $config = FtpConnectionOptions::fromArray(
             [
-                'host'     => $this->_host,
+                'host' => $this->_host,
                 'username' => $this->_username,
                 'password' => $this->_password,
 
                 /** optional config settings */
-                'port'     => $this->_port,
-                'root'     => '/',
-                'passive'  => $this->_passive,
+                'port' => $this->_port,
+                'root' => '/',
+                'passive' => $this->_passive,
                 //'ssl' => true,
-                'timeout'  => $this->_timeout,
+                'timeout' => $this->_timeout,
             ]
         );
         $this->client = new FtpAdapter($config);
@@ -69,7 +68,7 @@ class FtpClient extends Base
     }
 
 
-    private function connect()
+    private function connect(): void
     {
         //        $this->client->getConnection();
     }
@@ -87,7 +86,7 @@ class FtpClient extends Base
     public function getRemoteFileStat(string $remote): FileStat
     {
         $this->connect();
-        $stat = new FileStat($remote, FileType::File());
+        $stat = new FileStat($remote, FileType::File);
         $stat->setExists(false);
 
         $timeStamp = $this->client->lastModified($remote)->lastModified();

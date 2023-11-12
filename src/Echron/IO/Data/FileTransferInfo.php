@@ -6,10 +6,10 @@ namespace Echron\IO\Data;
 
 class FileTransferInfo
 {
-    private $success = false;
-    private $bytesTransferred = -1;
-    private $wasLazyTransfer = false;
-    private $transferWasNeeded = true;
+    private bool $success;
+    private int $bytesTransferred;
+    private bool $wasLazyTransfer = false;
+    private bool $transferWasNeeded = true;
 
     public function __construct(bool $success, int $bytesTransferred = -1)
     {
@@ -25,11 +25,11 @@ class FileTransferInfo
 
     public function isSuccess(): bool
     {
-        return $this->isSuccess();
+        return $this->success;
     }
 
     public function bytesTransferred(): int
     {
-        return $this->bytesTransferred();
+        return $this->bytesTransferred;
     }
 }

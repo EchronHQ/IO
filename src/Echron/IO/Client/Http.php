@@ -10,7 +10,6 @@ use Echron\IO\Data\FileTransferInfo;
 use Exception;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\ClientInterface;
-
 use function is_null;
 
 class Http extends Base
@@ -102,7 +101,7 @@ class Http extends Base
 
                     if ($fileHeadResponse->hasHeader('Content-Length')) {
                         $size = $fileHeadResponse->getHeaderLine('Content-Length');
-                        $size = intval($size);
+                        $size = (int)$size;
                         $stat->setBytes($size);
                     }
                     break;
@@ -115,7 +114,7 @@ class Http extends Base
             }
         } catch (Exception $ex) {
             if ($this->logger) {
-                $this->logger->error('Error while getting remote file stat: ' . $ex);
+                $this->logger->error('Error while getting remote file stat: ' . $ex->getMessage());
             }
         }
 
@@ -124,9 +123,7 @@ class Http extends Base
 
     public function remoteFileExists(string $remote): bool
     {
-        $remoteFileStat = $this->getRemoteFileStat($remote);
-
-        return $remoteFileStat->getExists();
+        return $this->getRemoteFileStat($remote)->getExists();
     }
 
     public function setRemoteChangeDate(string $remote, int $changeDate): bool

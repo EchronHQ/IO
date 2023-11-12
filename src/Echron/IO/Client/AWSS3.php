@@ -12,7 +12,6 @@ use Echron\IO\Data\FileStatCollection;
 use Echron\IO\Data\FileTransferInfo;
 use Exception;
 use GuzzleHttp\Psr7\Stream;
-
 use function class_exists;
 use function is_null;
 
@@ -21,11 +20,11 @@ use function is_null;
  */
 class AWSS3 extends Base
 {
-    private $s3Client;
-    private $bucket;
-    private $region = 'eu-west-1';
+    private S3Client $s3Client;
+    private string $bucket;
+    private string $region = 'eu-west-1';
 
-    public function __construct(string $bucket, $credentials, string $region = 'eu-west-1')
+    public function __construct(string $bucket, array $credentials, string $region = 'eu-west-1')
     {
         if (!class_exists('\Aws\S3\S3Client')) {
             throw new Exception('aws/aws-sdk-php package not installed');
@@ -33,8 +32,8 @@ class AWSS3 extends Base
         $this->bucket = $bucket;
         //$provider = CredentialProvider::defaultProvider();
         $this->s3Client = new S3Client([
-            'version'     => 'latest',
-            'region'      => $this->region,
+            'version' => 'latest',
+            'region' => $this->region,
             'credentials' => $credentials,
         ]);
     }
@@ -47,10 +46,10 @@ class AWSS3 extends Base
     public function push(string $local, string $remote, int $setRemoteChangeDate = null): FileTransferInfo
     {
         $options = [
-            'Bucket'     => $this->bucket,
-            'Key'        => $remote,
+            'Bucket' => $this->bucket,
+            'Key' => $remote,
             'SourceFile' => $local,
-            'Metadata'   => [],
+            'Metadata' => [],
         ];
         $this->s3Client->putObject($options);
 
@@ -63,7 +62,7 @@ class AWSS3 extends Base
         return new FileTransferInfo(true);
     }
 
-    public function createBucket(string $bucket)
+    public function createBucket(string $bucket): void
     {
         $result = $this->s3Client->createBucket([
             'Bucket' => $bucket,
@@ -71,7 +70,7 @@ class AWSS3 extends Base
         $this->s3Client->waitUntil('BucketExists', ['Bucket' => $bucket]);
     }
 
-    public function clearBucket(string $bucket)
+    public function clearBucket(string $bucket): void
     {
         $objects = $this->listContent($bucket);
 
@@ -127,7 +126,7 @@ class AWSS3 extends Base
             $fileStat->setChangeDate($lastModified->getTimestamp());
         }
         if (isset($info['Size'])) {
-            $bytes = intval($info['Size']);
+            $bytes = (int)$info['Size'];
             $fileStat->setBytes($bytes);
         }
 
@@ -138,7 +137,7 @@ class AWSS3 extends Base
     {
         $result = $this->s3Client->deleteObject([
             'Bucket' => $this->bucket,
-            'Key'    => $remote,
+            'Key' => $remote,
         ]);
 
         // TODO: use result to determine success
@@ -150,7 +149,7 @@ class AWSS3 extends Base
         throw new Exception('Not implemented');
     }
 
-    public function deleteBucket(string $bucket)
+    public function deleteBucket(string $bucket): void
     {
         //TODO: handle exceptions
         $this->s3Client->deleteBucket(['Bucket' => $bucket]);
@@ -169,7 +168,7 @@ class AWSS3 extends Base
                 //            'IfNoneMatch' => 'string',
                 //            'IfUnmodifiedSince' => 'mixed type: string (date format)|int (unix timestamp)|\DateTime',
                 // Key is required
-                'Key'    => $remote,
+                'Key' => $remote,
                 //            'Range' => 'string',
                 //            'VersionId' => 'string',
                 //            'SSECustomerAlgorithm' => 'string',
@@ -214,7 +213,7 @@ class AWSS3 extends Base
     {
         $result = $this->s3Client->getObject([
             'Bucket' => $this->bucket,
-            'Key'    => $remote,
+            'Key' => $remote,
         ]);
         //TODO: handle when object does not exist
         if ($result->hasKey('Body')) {
