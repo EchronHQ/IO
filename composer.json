@@ -1,7 +1,7 @@
 {
   "name": "echron/io",
   "description": "IO library for PHP",
-  "homepage": "https://github.com/echron/io",
+  "homepage": "https://github.com/EchronHQ/IO",
   "type": "library",
   "license": "MIT",
   "authors": [

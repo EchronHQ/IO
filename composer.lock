@@ -56,12 +56,12 @@
             "version": "1.6.2",
             "source": {
                 "type": "git",
-                "url": "https://github.com/Echron/Tools.git",
+                "url": "https://github.com/EchronHQ/Tools.git",
                 "reference": "d83769d69d7f77d1b7ea49806f908eda6f4e765d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Echron/Tools/zipball/d83769d69d7f77d1b7ea49806f908eda6f4e765d",
+                "url": "https://api.github.com/repos/EchronHQ/Tools/zipball/d83769d69d7f77d1b7ea49806f908eda6f4e765d",
                 "reference": "d83769d69d7f77d1b7ea49806f908eda6f4e765d",
                 "shasum": ""
             },
@@ -99,8 +99,8 @@
             "description": "Tools library for PHP",
             "homepage": "https://github.com/echron/tools",
             "support": {
-                "issues": "https://github.com/Echron/Tools/issues",
-                "source": "https://github.com/Echron/Tools/tree/1.6.2"
+                "issues": "https://github.com/EchronHQ/Tools/issues",
+                "source": "https://github.com/EchronHQ/Tools/tree/1.6.2"
             },
             "time": "2023-06-12T14:34:40+00:00"
         },
