@@ -96,10 +96,22 @@ class SFTP extends Base
         $directory = dirname($remote);
 
         //        var_dump($this->sftpClient->pwd() . ' ' . $directory);
-        $dirCreated = $this->sftpClient->mkdir($directory, -1, true);
+
+        try {
+            $dirCreated = $this->sftpClient->mkdir($directory, -1, true);
+        } catch (\Throwable $ex) {
+            throw new Exception('Unable to push file from `' . $local . '` to `' . $remote . '`: unable to create remote dir `' . $directory . '`', 0, $ex);
+        }
+
 
         //        var_dump($dirCreated);
-        $fileIsUploaded = $this->sftpClient->put($remote, $local, SFTPClient::SOURCE_LOCAL_FILE);
+
+        try {
+            $fileIsUploaded = $this->sftpClient->put($remote, $local, SFTPClient::SOURCE_LOCAL_FILE);
+        } catch (\Throwable $ex) {
+            throw new Exception('Unable to push file from `' . $local . '` to `' . $remote . '`: sftp put error', 0, $ex);
+        }
+
 
         if (!is_null($setRemoteChangeDate)) {
             $this->setRemoteChangeDate($remote, $setRemoteChangeDate);
