@@ -96,10 +96,22 @@ class SFTP extends Base
         $directory = dirname($remote);
 
         //        var_dump($this->sftpClient->pwd() . ' ' . $directory);
-        $dirCreated = $this->sftpClient->mkdir($directory, -1, true);
+
+        try {
+            $dirCreated = $this->sftpClient->mkdir($directory, -1, true);
+        } catch (\Throwable $ex) {
+            throw new Exception('Unable to push file from `' . $local . '` to `' . $remote . '`: unable to create remote dir `' . $directory . '`', 0, $ex);
+        }
+
 
         //        var_dump($dirCreated);
-        $fileIsUploaded = $this->sftpClient->put($remote, $local, SFTPClient::SOURCE_LOCAL_FILE);
+
+        try {
+            $fileIsUploaded = $this->sftpClient->put($remote, $local, SFTPClient::SOURCE_LOCAL_FILE);
+        } catch (\Throwable $ex) {
+            throw new Exception('Unable to push file from `' . $local . '` to `' . $remote . '`: sftp put error', 0, $ex);
+        }
+
 
         if (!is_null($setRemoteChangeDate)) {
             $this->setRemoteChangeDate($remote, $setRemoteChangeDate);
@@ -121,27 +133,33 @@ class SFTP extends Base
         if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
             $this->connect();
         }
-        $sftpType = $this->sftpClient->filetype($remote);
+        try {
 
-        $stat = new FileStat($remote);
-        $stat->setExists(false);
 
-        if ($sftpType) {
-            $type = $this->parseSFTPTypeToFileType($sftpType);
+            $sftpType = $this->sftpClient->filetype($remote);
 
-            //TODO: separate when only 1 of the stats is needed
-            //TODO: try  $this->sftpClient->stat()
+            $stat = new FileStat($remote);
+            $stat->setExists(false);
 
-            $bytes = (int)$this->sftpClient->filesize($remote);
-            $changedate = (int)$this->sftpClient->filemtime($remote);
+            if ($sftpType) {
+                $type = $this->parseSFTPTypeToFileType($sftpType);
 
-            $stat->setExists(true);
-            $stat->setBytes($bytes);
-            $stat->setChangeDate($changedate);
-            $stat->setType($type);
+                //TODO: separate when only 1 of the stats is needed
+                //TODO: try  $this->sftpClient->stat()
+
+                $bytes = (int)$this->sftpClient->filesize($remote);
+                $changedate = (int)$this->sftpClient->filemtime($remote);
+
+                $stat->setExists(true);
+                $stat->setBytes($bytes);
+                $stat->setChangeDate($changedate);
+                $stat->setType($type);
+            }
+
+            return $stat;
+        } catch (Exception $ex) {
+            throw new Exception('Unable to get remote file stats for `' . $remote . '`', 0, $ex);
         }
-
-        return $stat;
     }
 
     private function parseSFTPTypeToFileType(string $sftpType): FileType
@@ -170,7 +188,6 @@ class SFTP extends Base
         if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
             $this->connect();
         }
-
         $this->sftpClient->disableStatCache();
 
         return $this->sftpClient->file_exists($remote);
