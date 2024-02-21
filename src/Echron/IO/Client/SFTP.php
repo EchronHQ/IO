@@ -133,27 +133,33 @@ class SFTP extends Base
         if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
             $this->connect();
         }
-        $sftpType = $this->sftpClient->filetype($remote);
+        try {
 
-        $stat = new FileStat($remote);
-        $stat->setExists(false);
 
-        if ($sftpType) {
-            $type = $this->parseSFTPTypeToFileType($sftpType);
+            $sftpType = $this->sftpClient->filetype($remote);
 
-            //TODO: separate when only 1 of the stats is needed
-            //TODO: try  $this->sftpClient->stat()
+            $stat = new FileStat($remote);
+            $stat->setExists(false);
 
-            $bytes = (int)$this->sftpClient->filesize($remote);
-            $changedate = (int)$this->sftpClient->filemtime($remote);
+            if ($sftpType) {
+                $type = $this->parseSFTPTypeToFileType($sftpType);
 
-            $stat->setExists(true);
-            $stat->setBytes($bytes);
-            $stat->setChangeDate($changedate);
-            $stat->setType($type);
+                //TODO: separate when only 1 of the stats is needed
+                //TODO: try  $this->sftpClient->stat()
+
+                $bytes = (int)$this->sftpClient->filesize($remote);
+                $changedate = (int)$this->sftpClient->filemtime($remote);
+
+                $stat->setExists(true);
+                $stat->setBytes($bytes);
+                $stat->setChangeDate($changedate);
+                $stat->setType($type);
+            }
+
+            return $stat;
+        } catch (Exception $ex) {
+            throw new Exception('Unable to get remote file stats for `' . $remote . '`', 0, $ex);
         }
-
-        return $stat;
     }
 
     private function parseSFTPTypeToFileType(string $sftpType): FileType
@@ -182,7 +188,6 @@ class SFTP extends Base
         if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
             $this->connect();
         }
-
         $this->sftpClient->disableStatCache();
 
         return $this->sftpClient->file_exists($remote);
