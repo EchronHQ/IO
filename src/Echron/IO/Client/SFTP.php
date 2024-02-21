@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Echron\IO\Client;
 
+use Attlaz\Adapter\Base\Client\SFTP as SFTPClient;
 use Echron\IO\Data\FileStat;
 use Echron\IO\Data\FileStatCollection;
 use Echron\IO\Data\FileTransferInfo;
@@ -13,7 +14,6 @@ use Echron\Tools\StringHelper;
 use Exception;
 use phpseclib3\Crypt\Common\AsymmetricKey;
 use phpseclib3\Crypt\RSA;
-use phpseclib3\Net\SFTP as SFTPClient;
 use function file_exists;
 use function file_get_contents;
 use function is_null;
@@ -21,11 +21,15 @@ use function is_null;
 class SFTP extends Base
 {
     private string $host;
-    private string|null $username = null;
-    private string|AsymmetricKey|null $password = null;
     private int $port;
     private int $timeout;
+    private string|null $username = null;
+    private string|AsymmetricKey|null $password = null;
+
     private SFTPClient|null $sftpClient = null;
+    private bool $connected = false;
+    private int|null $lastCommand = null;
+    private int $reconnectAfterInactivitySeconds = 5 * 60;
 
     public function __construct(string $host, int $port = 22, int $timeout = 30)
     {
@@ -68,6 +72,7 @@ class SFTP extends Base
         if ($this->sftpClient !== null) {
             $this->sftpClient->disconnect();
         }
+        $this->connected = false;
         $this->sftpClient = new SFTPClient($this->host, $this->port, $this->timeout);
         if ($this->username === null) {
             throw new Exception('Username must be defined');
@@ -80,6 +85,7 @@ class SFTP extends Base
             $this->sftpClient = null;
             throw new Exception('Unable to login: not authenticated 2 `' . $this->username . '@' . $this->host . ':' . $this->port . '`');
         }
+        $this->connected = true;
     }
 
     public function push(string $local, string $remote, int $setRemoteChangeDate = null): FileTransferInfo
@@ -126,6 +132,24 @@ class SFTP extends Base
         //        });
         //        var_dump($res);
 
+    }
+
+
+    private function checkConnection(): void
+    {
+        if ($this->connected) {
+            $secondsSinceLastCommand = (int)gmdate('U') - (int)$this->lastCommand;
+
+            if ($secondsSinceLastCommand > $this->reconnectAfterInactivitySeconds) {
+                //Reconnect
+                $this->disconnect();
+            }
+        }
+        if (!$this->connected) {
+            $this->connect();
+        }
+
+        $this->lastCommand = (int)gmdate('U');
     }
 
     public function getRemoteFileStat(string $remote): FileStat
@@ -247,6 +271,7 @@ class SFTP extends Base
         if ($this->sftpClient !== null) {
             $this->sftpClient->disconnect();
         }
+        $this->connected = false;
     }
 
     public function getClient(): SFTPClient|null
@@ -258,8 +283,10 @@ class SFTP extends Base
     {
         if ($disconnectIfClientExists && !is_null($this->sftpClient) && $this->sftpClient->isConnected()) {
             $this->sftpClient->disconnect();
+            $this->connected = false;
         }
         $this->sftpClient = $sftpClient;
+        $this->connected = true;
     }
 
     /**
