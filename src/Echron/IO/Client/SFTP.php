@@ -67,27 +67,6 @@ class SFTP extends Base
         $this->password = $key;
     }
 
-    private function connect(): void
-    {
-        if ($this->sftpClient !== null) {
-            $this->sftpClient->disconnect();
-        }
-        $this->connected = false;
-        $this->sftpClient = new SFTPClient($this->host, $this->port, $this->timeout);
-        if ($this->username === null) {
-            throw new Exception('Username must be defined');
-        }
-        if ($this->password === null) {
-            throw new Exception('Password must be defined');
-        }
-        $authenticated = $this->sftpClient->login($this->username, $this->password);
-        if (!$authenticated) {
-            $this->sftpClient = null;
-            throw new Exception('Unable to login: not authenticated 2 `' . $this->username . '@' . $this->host . ':' . $this->port . '`');
-        }
-        $this->connected = true;
-    }
-
     public function push(string $local, string $remote, int $setRemoteChangeDate = null): FileTransferInfo
     {
         if (!file_exists($local)) {
@@ -134,68 +113,46 @@ class SFTP extends Base
 
     }
 
-
-    private function checkConnection(): void
+    private function connect(): void
     {
-        if ($this->connected) {
-            $secondsSinceLastCommand = (int)gmdate('U') - (int)$this->lastCommand;
-
-            if ($secondsSinceLastCommand > $this->reconnectAfterInactivitySeconds) {
-                //Reconnect
-                $this->disconnect();
-            }
+        if ($this->sftpClient !== null) {
+            $this->sftpClient->disconnect();
+        } else {
+            $this->sftpClient = new SFTPClient($this->host, $this->port, $this->timeout);
         }
-        if (!$this->connected) {
-            $this->connect();
-        }
+        $this->connected = false;
+        // TODO: if we use "setClient", these properties will not be defined
 
-        $this->lastCommand = (int)gmdate('U');
+
+        if ($this->username === null) {
+            throw new Exception('Username must be defined');
+        }
+        if ($this->password === null) {
+            throw new Exception('Password must be defined');
+        }
+        $authenticated = $this->sftpClient->login($this->username, $this->password);
+        if (!$authenticated) {
+            $this->sftpClient = null;
+            throw new Exception('Unable to login: not authenticated 2 `' . $this->username . '@' . $this->host . ':' . $this->port . '`');
+        }
+        $this->connected = true;
     }
 
-    public function getRemoteFileStat(string $remote): FileStat
+    public function disconnect(): void
+    {
+        if ($this->sftpClient !== null) {
+            $this->sftpClient->disconnect();
+        }
+        $this->connected = false;
+    }
+
+    public function setRemoteChangeDate(string $remote, int $changeDate): bool
     {
         if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
             $this->connect();
         }
-        try {
 
-
-            $sftpType = $this->sftpClient->filetype($remote);
-
-            $stat = new FileStat($remote);
-            $stat->setExists(false);
-
-            if ($sftpType) {
-                $type = $this->parseSFTPTypeToFileType($sftpType);
-
-                //TODO: separate when only 1 of the stats is needed
-                //TODO: try  $this->sftpClient->stat()
-
-                $bytes = (int)$this->sftpClient->filesize($remote);
-                $changedate = (int)$this->sftpClient->filemtime($remote);
-
-                $stat->setExists(true);
-                $stat->setBytes($bytes);
-                $stat->setChangeDate($changedate);
-                $stat->setType($type);
-            }
-
-            return $stat;
-        } catch (Exception $ex) {
-            throw new Exception('Unable to get remote file stats for `' . $remote . '`', 0, $ex);
-        }
-    }
-
-    private function parseSFTPTypeToFileType(string $sftpType): FileType
-    {
-        //        if (!$this->sftpClient->isConnected()) {
-        //            $this->connectClient();
-        //        }
-        return match ($sftpType) {
-            'file' => FileType::File,
-            'dir' => FileType::Dir,
-            default => throw new Exception('Unknown SFTP file type "' . $sftpType . '"'),
-        };
+        return $this->sftpClient->touch($remote, $changeDate);
     }
 
     public function delete(string $remote): bool
@@ -256,22 +213,50 @@ class SFTP extends Base
         return new FileTransferInfo($fileIsDownloaded);
     }
 
-    public function setRemoteChangeDate(string $remote, int $changeDate): bool
+    public function getRemoteFileStat(string $remote): FileStat
     {
         if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
             $this->connect();
         }
+        try {
 
-        return $this->sftpClient->touch($remote, $changeDate);
+
+            $sftpType = $this->sftpClient->filetype($remote);
+
+            $stat = new FileStat($remote);
+            $stat->setExists(false);
+
+            if ($sftpType) {
+                $type = $this->parseSFTPTypeToFileType($sftpType);
+
+                //TODO: separate when only 1 of the stats is needed
+                //TODO: try  $this->sftpClient->stat()
+
+                $bytes = (int)$this->sftpClient->filesize($remote);
+                $changedate = (int)$this->sftpClient->filemtime($remote);
+
+                $stat->setExists(true);
+                $stat->setBytes($bytes);
+                $stat->setChangeDate($changedate);
+                $stat->setType($type);
+            }
+
+            return $stat;
+        } catch (Exception $ex) {
+            throw new Exception('Unable to get remote file stats for `' . $remote . '`', 0, $ex);
+        }
     }
 
-
-    public function disconnect(): void
+    private function parseSFTPTypeToFileType(string $sftpType): FileType
     {
-        if ($this->sftpClient !== null) {
-            $this->sftpClient->disconnect();
-        }
-        $this->connected = false;
+        //        if (!$this->sftpClient->isConnected()) {
+        //            $this->connectClient();
+        //        }
+        return match ($sftpType) {
+            'file' => FileType::File,
+            'dir' => FileType::Dir,
+            default => throw new Exception('Unknown SFTP file type "' . $sftpType . '"'),
+        };
     }
 
     public function getClient(): SFTPClient|null
@@ -286,6 +271,10 @@ class SFTP extends Base
             $this->connected = false;
         }
         $this->sftpClient = $sftpClient;
+
+        $this->username = $sftpClient->getUsername();
+        $this->password = $sftpClient->getLoginArgs();
+
         $this->connected = true;
     }
 
@@ -298,7 +287,6 @@ class SFTP extends Base
             $this->connect();
         }
 
-        //\var_dump($remotePath);
         $rawFiles = $this->sftpClient->rawlist($remotePath, $recursive);
         if ($rawFiles === false) {
             throw new Exception('Unable to get file list');
@@ -326,18 +314,6 @@ class SFTP extends Base
         }
 
         return $result;
-    }
-
-    private function gluePath(string $part1, string $part2): string
-    {
-        // TODO: is forward slash the correct path separator?
-        $pathSeparator = '/';
-
-        if (StringHelper::endsWith($part1, $pathSeparator)) {
-            return $part1 . $part2;
-        }
-
-        return $part1 . $pathSeparator . $part2;
     }
 
     private function rawFileToFileStat(array $rawFile, string $remotePath): ?FileStat
@@ -375,6 +351,35 @@ class SFTP extends Base
         $fileStat->setType($type);
 
         return $fileStat;
+    }
+
+    private function gluePath(string $part1, string $part2): string
+    {
+        // TODO: is forward slash the correct path separator?
+        $pathSeparator = '/';
+
+        if (StringHelper::endsWith($part1, $pathSeparator)) {
+            return $part1 . $part2;
+        }
+
+        return $part1 . $pathSeparator . $part2;
+    }
+
+    private function checkConnection(): void
+    {
+        if ($this->connected) {
+            $secondsSinceLastCommand = (int)gmdate('U') - (int)$this->lastCommand;
+
+            if ($secondsSinceLastCommand > $this->reconnectAfterInactivitySeconds) {
+                //Reconnect
+                $this->disconnect();
+            }
+        }
+        if (!$this->connected) {
+            $this->connect();
+        }
+
+        $this->lastCommand = (int)gmdate('U');
     }
 
 
