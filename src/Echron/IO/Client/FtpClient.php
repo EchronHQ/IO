@@ -42,6 +42,9 @@ class FtpClient extends Base
         $this->_passive = $passive;
         // $this->enableDebug();
 
+        if (!class_exists('League\Flysystem\Ftp\FtpAdapter')) {
+            throw new Exception('league/flysystem-ftp package not installed');
+        }
 
         $config = FtpConnectionOptions::fromArray(
             [

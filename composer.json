@@ -11,19 +11,18 @@
   ],
   "require": {
     "php": "^8.1",
-    "guzzlehttp/guzzle": "^6.5.8 || ^7.5.1",
-    "echron/tools": "^1.6.1",
-    "echron/datatypes": "^1.5.0",
-    "phpseclib/phpseclib": "^3.0.0",
-    "psr/simple-cache": "^3",
-    "psr/log": "^2.0 || ^3.0",
-    "league/flysystem-ftp": "^3.15.0"
+    "guzzlehttp/guzzle": "^7.9.2",
+    "echron/tools": "^1.6.6",
+    "attlaz/adapter-base": "^1.9.1 | dev-develop",
+    "psr/simple-cache": "^3.0.0",
+    "psr/log": "^2.0 || ^3.0"
   },
   "suggest": {
     "kunalvarma05/dropbox-php-sdk": "Use the Dropbox client",
     "google/apiclient": "Use the Google Drive client",
     "aws/aws-sdk-php": "Use the AWS client",
-    "symfony/cache": "Use Symfony cache clients"
+    "symfony/cache": "Use Symfony cache clients",
+    "league/flysystem-ftp": "Use FTP client"
   },
   "autoload": {
     "psr-4": {
@@ -31,14 +30,13 @@
     }
   },
   "require-dev": {
-    "phpunit/phpunit": "^9.0",
+    "phpunit/phpunit": "^10.5.28",
     "kunalvarma05/dropbox-php-sdk": "^v0.4.1",
-    "aws/aws-sdk-php": "^3.112.35",
     "sempro/phpunit-pretty-print": "*",
-    "phpmd/phpmd": "^2.12.0",
-    "phpstan/phpstan": "^1.10.16",
+    "phpmd/phpmd": "^2.15.0",
+    "phpstan/phpstan": "^1.11.8",
     "thecodingmachine/phpstan-safe-rule": "^v1.2.0",
-    "friendsofphp/php-cs-fixer": "^v3.17.0"
+    "friendsofphp/php-cs-fixer": "^v3.60.0"
   },
   "require-disabled": {
     "google/apiclient": "^v2.12.6"
@@ -48,6 +46,12 @@
   "config": {
     "process-timeout": 0
   },
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://repo.attlaz.com/"
+    }
+  ],
   "scripts": {
     "lint:fix": " ./vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.php",
     "phpstan": " ./vendor/bin/phpstan analyse --memory-limit=512M",

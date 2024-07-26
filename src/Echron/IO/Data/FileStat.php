@@ -9,7 +9,7 @@ use function implode;
 
 class FileStat
 {
-    private string $path = '';
+    private string $path;
     private int $bytes = -1;
     private int $changeDate = -1;
     private bool $exists = false;
@@ -28,29 +28,9 @@ class FileStat
         $this->type = $type;
     }
 
-    public function setType(FileType $type): void
-    {
-        $this->type = $type;
-    }
-
-    public function setExists(bool $exists): void
-    {
-        $this->exists = $exists;
-    }
-
     public function getPath(): string
     {
         return $this->path;
-    }
-
-    public function setBytes(int $bytes): void
-    {
-        $this->bytes = $bytes;
-    }
-
-    public function setChangeDate(int $changeDate): void
-    {
-        $this->changeDate = $changeDate;
     }
 
     public function equals(FileStat $fileStat): bool
@@ -76,9 +56,19 @@ class FileStat
         return $this->type;
     }
 
+    public function setType(FileType $type): void
+    {
+        $this->type = $type;
+    }
+
     public function getExists(): bool
     {
         return $this->exists;
+    }
+
+    public function setExists(bool $exists): void
+    {
+        $this->exists = $exists;
     }
 
     public function getChangeDate(): int
@@ -86,9 +76,19 @@ class FileStat
         return $this->changeDate;
     }
 
+    public function setChangeDate(int $changeDate): void
+    {
+        $this->changeDate = $changeDate;
+    }
+
     public function getBytes(): int
     {
         return $this->bytes;
+    }
+
+    public function setBytes(int $bytes): void
+    {
+        $this->bytes = $bytes;
     }
 
     public function debug(): string

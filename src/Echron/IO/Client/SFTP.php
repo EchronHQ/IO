@@ -4,82 +4,20 @@ declare(strict_types=1);
 
 namespace Echron\IO\Client;
 
+use Attlaz\Adapter\Base\Client\SFTP as SFTPClient;
 use Echron\IO\Data\FileStat;
 use Echron\IO\Data\FileStatCollection;
 use Echron\IO\Data\FileTransferInfo;
 use Echron\IO\Data\FileType;
-use Echron\IO\Helper\FileHelper;
-use Echron\Tools\StringHelper;
 use Exception;
-use phpseclib3\Crypt\Common\AsymmetricKey;
-use phpseclib3\Crypt\RSA;
-use phpseclib3\Net\SFTP as SFTPClient;
 use function file_exists;
-use function file_get_contents;
 use function is_null;
 
 class SFTP extends Base
 {
-    private string $host;
-    private string|null $username = null;
-    private string|AsymmetricKey|null $password = null;
-    private int $port;
-    private int $timeout;
-    private SFTPClient|null $sftpClient = null;
-
-    public function __construct(string $host, int $port = 22, int $timeout = 30)
+    public function __construct(private SFTPClient $sftpClient)
     {
-        $this->host = $host;
-        $this->port = $port;
-        $this->timeout = $timeout;
-    }
 
-    public function getHost(): string
-    {
-        return $this->host;
-    }
-
-    public function loginWithPassword(string $username, string $password = null): void
-    {
-        $this->username = $username;
-        $this->password = $password;
-    }
-
-    public function loginWithKey(string $username, string $keyFilePath, string|null $keyFilePassword = null): void
-    {
-        if (!file_exists($keyFilePath)) {
-            $maskedKeyFile = FileHelper::maskFileName($keyFilePath);
-
-            throw new Exception('Key file "' . $maskedKeyFile . '" does not exist');
-        }
-
-        if (!is_null($keyFilePassword)) {
-            $key = RSA::load(file_get_contents($keyFilePath), $keyFilePassword);
-        } else {
-            $key = RSA::load(file_get_contents($keyFilePath));
-        }
-
-        $this->username = $username;
-        $this->password = $key;
-    }
-
-    private function connect(): void
-    {
-        if ($this->sftpClient !== null) {
-            $this->sftpClient->disconnect();
-        }
-        $this->sftpClient = new SFTPClient($this->host, $this->port, $this->timeout);
-        if ($this->username === null) {
-            throw new Exception('Username must be defined');
-        }
-        if ($this->password === null) {
-            throw new Exception('Password must be defined');
-        }
-        $authenticated = $this->sftpClient->login($this->username, $this->password);
-        if (!$authenticated) {
-            $this->sftpClient = null;
-            throw new Exception('Unable to login: not authenticated 2 `' . $this->username . '@' . $this->host . ':' . $this->port . '`');
-        }
     }
 
     public function push(string $local, string $remote, int $setRemoteChangeDate = null): FileTransferInfo
@@ -88,9 +26,9 @@ class SFTP extends Base
             throw new Exception('Unable to push, local file does not exist');
         }
 
-        if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
-            $this->connect();
-        }
+//        if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
+//            $this->connect();
+//        }
         //Create directory
 
         $directory = dirname($remote);
@@ -128,11 +66,78 @@ class SFTP extends Base
 
     }
 
+    public function setRemoteChangeDate(string $remote, int $changeDate): bool
+    {
+//        if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
+//            $this->connect();
+//        }
+
+        return $this->sftpClient->touch($remote, $changeDate);
+    }
+
+    public function delete(string $remote): bool
+    {
+//        if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
+//            $this->connect();
+//        }
+        //Not recursive: return $this->getClient()->delete($remotePath, false);
+        return $this->sftpClient->delete($remote);
+    }
+
+    public function remoteFileExists(string $remote): bool
+    {
+//        if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
+//            $this->connect();
+//        }
+        $this->sftpClient->disableStatCache();
+
+        return $this->sftpClient->file_exists($remote);
+    }
+
+    public function pull(
+        string $remote,
+        string $local,
+        int    $localChangeDate = null,
+        bool   $showProgress = false
+    ): FileTransferInfo
+    {
+//        if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
+//            $this->connect();
+//        }
+
+        $progress = null;
+        if ($showProgress) {
+            $stats = $this->getRemoteFileStat($remote);
+            $progress = static function ($read) use ($stats) {
+                if ($read > 0) {
+                    $percent = \round($read / $stats->getBytes() * 100, 2);
+                    echo $percent . '%' . \PHP_EOL;
+                } else {
+                    echo '0%' . \PHP_EOL;
+                }
+            };
+        }
+        $fileIsDownloaded = $this->sftpClient->get($remote, $local, 0, -1, $progress);
+
+        if (!$fileIsDownloaded) {
+            throw new Exception('Unable to pull remote file "' . $remote . '" (' . $this->sftpClient->getLastSFTPError() . ')');
+            //            var_dump($remote . ' => ' . $local);
+        }
+
+        if (!is_null($localChangeDate)) {
+            $this->setLocalChangeDate($local, $localChangeDate);
+        }
+
+        // TODO: determine transferred bytes
+        // return null;
+        return new FileTransferInfo($fileIsDownloaded);
+    }
+
     public function getRemoteFileStat(string $remote): FileStat
     {
-        if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
-            $this->connect();
-        }
+//        if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
+//            $this->connect();
+//        }
         try {
 
 
@@ -174,82 +179,7 @@ class SFTP extends Base
         };
     }
 
-    public function delete(string $remote): bool
-    {
-        if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
-            $this->connect();
-        }
-        //Not recursive: return $this->getClient()->delete($remotePath, false);
-        return $this->sftpClient->delete($remote);
-    }
-
-    public function remoteFileExists(string $remote): bool
-    {
-        if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
-            $this->connect();
-        }
-        $this->sftpClient->disableStatCache();
-
-        return $this->sftpClient->file_exists($remote);
-    }
-
-    public function pull(
-        string $remote,
-        string $local,
-        int    $localChangeDate = null,
-        bool   $showProgress = false
-    ): FileTransferInfo
-    {
-        if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
-            $this->connect();
-        }
-
-        $progress = null;
-        if ($showProgress) {
-            $stats = $this->getRemoteFileStat($remote);
-            $progress = static function ($read) use ($stats) {
-                if ($read > 0) {
-                    $percent = \round($read / $stats->getBytes() * 100, 2);
-                    echo $percent . '%' . \PHP_EOL;
-                } else {
-                    echo '0%' . \PHP_EOL;
-                }
-            };
-        }
-        $fileIsDownloaded = $this->sftpClient->get($remote, $local, 0, -1, $progress);
-
-        if (!$fileIsDownloaded) {
-            throw new Exception('Unable to pull remote file "' . $remote . '" (' . $this->sftpClient->getLastSFTPError() . ')');
-            //            var_dump($remote . ' => ' . $local);
-        }
-
-        if (!is_null($localChangeDate)) {
-            $this->setLocalChangeDate($local, $localChangeDate);
-        }
-
-        // TODO: determine transferred bytes
-        // return null;
-        return new FileTransferInfo($fileIsDownloaded);
-    }
-
-    public function setRemoteChangeDate(string $remote, int $changeDate): bool
-    {
-        if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
-            $this->connect();
-        }
-
-        return $this->sftpClient->touch($remote, $changeDate);
-    }
-
-
-    public function disconnect(): void
-    {
-        if ($this->sftpClient !== null) {
-            $this->sftpClient->disconnect();
-        }
-    }
-
-    public function getClient(): SFTPClient|null
+    public function getClient(): SFTPClient
     {
         return $this->sftpClient;
     }
@@ -262,16 +192,20 @@ class SFTP extends Base
         $this->sftpClient = $sftpClient;
     }
 
+    public function disconnect(): void
+    {
+        $this->sftpClient->disconnect();
+    }
+
     /**
      * @inheritDoc
      */
     public function list(string $remotePath, bool $recursive = false): FileStatCollection
     {
-        if (!$this->sftpClient->isConnected()) {
-            $this->connect();
-        }
+//        if (!$this->sftpClient->isConnected()) {
+//            $this->connect();
+//        }
 
-        //\var_dump($remotePath);
         $rawFiles = $this->sftpClient->rawlist($remotePath, $recursive);
         if ($rawFiles === false) {
             throw new Exception('Unable to get file list');
@@ -299,18 +233,6 @@ class SFTP extends Base
         }
 
         return $result;
-    }
-
-    private function gluePath(string $part1, string $part2): string
-    {
-        // TODO: is forward slash the correct path separator?
-        $pathSeparator = '/';
-
-        if (StringHelper::endsWith($part1, $pathSeparator)) {
-            return $part1 . $part2;
-        }
-
-        return $part1 . $pathSeparator . $part2;
     }
 
     private function rawFileToFileStat(array $rawFile, string $remotePath): ?FileStat
@@ -350,5 +272,15 @@ class SFTP extends Base
         return $fileStat;
     }
 
+    private function gluePath(string $part1, string $part2): string
+    {
+        // TODO: is forward slash the correct path separator?
+        $pathSeparator = '/';
 
+        if (str_ends_with($part1, $pathSeparator)) {
+            return $part1 . $part2;
+        }
+
+        return $part1 . $pathSeparator . $part2;
+    }
 }
