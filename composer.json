@@ -13,17 +13,16 @@
     "php": "^8.1",
     "guzzlehttp/guzzle": "^7.9.2",
     "echron/tools": "^1.6.6",
-    "attlaz/adapter-base": "^1.8.7 | dev-develop",
-    "echron/datatypes": "^1.6.0",
+    "attlaz/adapter-base": "^1.9.1 | dev-develop",
     "psr/simple-cache": "^3.0.0",
-    "psr/log": "^2.0 || ^3.0",
-    "league/flysystem-ftp": "^3.28.0"
+    "psr/log": "^2.0 || ^3.0"
   },
   "suggest": {
     "kunalvarma05/dropbox-php-sdk": "Use the Dropbox client",
     "google/apiclient": "Use the Google Drive client",
     "aws/aws-sdk-php": "Use the AWS client",
-    "symfony/cache": "Use Symfony cache clients"
+    "symfony/cache": "Use Symfony cache clients",
+    "league/flysystem-ftp": "Use FTP client"
   },
   "autoload": {
     "psr-4": {

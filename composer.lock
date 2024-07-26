@@ -4,26 +4,26 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "50f818b90ba965536cfb1dda075d5691",
+    "content-hash": "68dee538df7110b92dd09d47911963ae",
     "packages": [
         {
             "name": "attlaz/adapter-base",
-            "version": "1.8.7",
+            "version": "1.9.1",
             "source": {
                 "type": "git",
                 "url": "git@bitbucket.org:attlaz/adapter-base-php.git",
-                "reference": "1f11fd18cd93f4a01c287c04013be1e6890c85d7"
+                "reference": "4ccb286027f902f662329139c4ffc9cf9b3897c1"
             },
             "dist": {
                 "type": "tar",
-                "url": "https://packagist.echron.be/dist/attlaz/adapter-base/attlaz-adapter-base-1.8.7-522acb.tar",
-                "reference": "1f11fd18cd93f4a01c287c04013be1e6890c85d7",
-                "shasum": "c51104f556fc9b00b2863126d5d8b07cee21722a"
+                "url": "https://packagist.echron.be/dist/attlaz/adapter-base/attlaz-adapter-base-1.9.1-b8b5c7.tar",
+                "reference": "4ccb286027f902f662329139c4ffc9cf9b3897c1",
+                "shasum": "05e1f2c34d22d2315b3fbadeb619aac22e86427e"
             },
             "require": {
                 "attlaz/client": "^1.11.7",
-                "echron/datatypes": "^1.6",
-                "echron/tools": "^1.6.5",
+                "echron/datatypes": "^1.6.0",
+                "echron/tools": "^1.6.6",
                 "ext-json": "*",
                 "laminas/laminas-db": "^2.20",
                 "php": "^8.1",
@@ -76,7 +76,7 @@
                 "email": "support@attlaz.com",
                 "docs": "https://docs.attlaz.com/"
             },
-            "time": "2024-07-26T19:07:41+00:00"
+            "time": "2024-07-26T22:37:34+00:00"
         },
         {
             "name": "attlaz/client",
@@ -680,244 +680,6 @@
                 }
             ],
             "time": "2024-01-19T12:39:49+00:00"
-        },
-        {
-            "name": "league/flysystem",
-            "version": "3.28.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/thephpleague/flysystem.git",
-                "reference": "e611adab2b1ae2e3072fa72d62c62f52c2bf1f0c"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/flysystem/zipball/e611adab2b1ae2e3072fa72d62c62f52c2bf1f0c",
-                "reference": "e611adab2b1ae2e3072fa72d62c62f52c2bf1f0c",
-                "shasum": ""
-            },
-            "require": {
-                "league/flysystem-local": "^3.0.0",
-                "league/mime-type-detection": "^1.0.0",
-                "php": "^8.0.2"
-            },
-            "conflict": {
-                "async-aws/core": "<1.19.0",
-                "async-aws/s3": "<1.14.0",
-                "aws/aws-sdk-php": "3.209.31 || 3.210.0",
-                "guzzlehttp/guzzle": "<7.0",
-                "guzzlehttp/ringphp": "<1.1.1",
-                "phpseclib/phpseclib": "3.0.15",
-                "symfony/http-client": "<5.2"
-            },
-            "require-dev": {
-                "async-aws/s3": "^1.5 || ^2.0",
-                "async-aws/simple-s3": "^1.1 || ^2.0",
-                "aws/aws-sdk-php": "^3.295.10",
-                "composer/semver": "^3.0",
-                "ext-fileinfo": "*",
-                "ext-ftp": "*",
-                "ext-mongodb": "^1.3",
-                "ext-zip": "*",
-                "friendsofphp/php-cs-fixer": "^3.5",
-                "google/cloud-storage": "^1.23",
-                "guzzlehttp/psr7": "^2.6",
-                "microsoft/azure-storage-blob": "^1.1",
-                "mongodb/mongodb": "^1.2",
-                "phpseclib/phpseclib": "^3.0.36",
-                "phpstan/phpstan": "^1.10",
-                "phpunit/phpunit": "^9.5.11|^10.0",
-                "sabre/dav": "^4.6.0"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "League\\Flysystem\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Frank de Jonge",
-                    "email": "info@frankdejonge.nl"
-                }
-            ],
-            "description": "File storage abstraction for PHP",
-            "keywords": [
-                "WebDAV",
-                "aws",
-                "cloud",
-                "file",
-                "files",
-                "filesystem",
-                "filesystems",
-                "ftp",
-                "s3",
-                "sftp",
-                "storage"
-            ],
-            "support": {
-                "issues": "https://github.com/thephpleague/flysystem/issues",
-                "source": "https://github.com/thephpleague/flysystem/tree/3.28.0"
-            },
-            "time": "2024-05-22T10:09:12+00:00"
-        },
-        {
-            "name": "league/flysystem-ftp",
-            "version": "3.28.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/thephpleague/flysystem-ftp.git",
-                "reference": "6c65e1de3767dca7f2712571a915cb952bae42e0"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/flysystem-ftp/zipball/6c65e1de3767dca7f2712571a915cb952bae42e0",
-                "reference": "6c65e1de3767dca7f2712571a915cb952bae42e0",
-                "shasum": ""
-            },
-            "require": {
-                "ext-ftp": "*",
-                "league/flysystem": "^3.0.0",
-                "league/mime-type-detection": "^1.0.0",
-                "php": "^8.0.2"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "League\\Flysystem\\Ftp\\": ""
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Frank de Jonge",
-                    "email": "info@frankdejonge.nl"
-                }
-            ],
-            "description": "FTP filesystem adapter for Flysystem.",
-            "keywords": [
-                "Flysystem",
-                "file",
-                "files",
-                "filesystem",
-                "ftp",
-                "ftpd"
-            ],
-            "support": {
-                "source": "https://github.com/thephpleague/flysystem-ftp/tree/3.28.0"
-            },
-            "time": "2024-05-06T20:05:52+00:00"
-        },
-        {
-            "name": "league/flysystem-local",
-            "version": "3.28.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/thephpleague/flysystem-local.git",
-                "reference": "13f22ea8be526ea58c2ddff9e158ef7c296e4f40"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/flysystem-local/zipball/13f22ea8be526ea58c2ddff9e158ef7c296e4f40",
-                "reference": "13f22ea8be526ea58c2ddff9e158ef7c296e4f40",
-                "shasum": ""
-            },
-            "require": {
-                "ext-fileinfo": "*",
-                "league/flysystem": "^3.0.0",
-                "league/mime-type-detection": "^1.0.0",
-                "php": "^8.0.2"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "League\\Flysystem\\Local\\": ""
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Frank de Jonge",
-                    "email": "info@frankdejonge.nl"
-                }
-            ],
-            "description": "Local filesystem adapter for Flysystem.",
-            "keywords": [
-                "Flysystem",
-                "file",
-                "files",
-                "filesystem",
-                "local"
-            ],
-            "support": {
-                "source": "https://github.com/thephpleague/flysystem-local/tree/3.28.0"
-            },
-            "time": "2024-05-06T20:05:52+00:00"
-        },
-        {
-            "name": "league/mime-type-detection",
-            "version": "1.15.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/thephpleague/mime-type-detection.git",
-                "reference": "ce0f4d1e8a6f4eb0ddff33f57c69c50fd09f4301"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/mime-type-detection/zipball/ce0f4d1e8a6f4eb0ddff33f57c69c50fd09f4301",
-                "reference": "ce0f4d1e8a6f4eb0ddff33f57c69c50fd09f4301",
-                "shasum": ""
-            },
-            "require": {
-                "ext-fileinfo": "*",
-                "php": "^7.4 || ^8.0"
-            },
-            "require-dev": {
-                "friendsofphp/php-cs-fixer": "^3.2",
-                "phpstan/phpstan": "^0.12.68",
-                "phpunit/phpunit": "^8.5.8 || ^9.3 || ^10.0"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "League\\MimeTypeDetection\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Frank de Jonge",
-                    "email": "info@frankdejonge.nl"
-                }
-            ],
-            "description": "Mime-type detection for Flysystem",
-            "support": {
-                "issues": "https://github.com/thephpleague/mime-type-detection/issues",
-                "source": "https://github.com/thephpleague/mime-type-detection/tree/1.15.0"
-            },
-            "funding": [
-                {
-                    "url": "https://github.com/frankdejonge",
-                    "type": "github"
-                },
-                {
-                    "url": "https://tidelift.com/funding/github/packagist/league/flysystem",
-                    "type": "tidelift"
-                }
-            ],
-            "time": "2024-01-28T23:22:08+00:00"
         },
         {
             "name": "league/oauth2-client",
