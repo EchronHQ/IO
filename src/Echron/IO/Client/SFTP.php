@@ -9,62 +9,15 @@ use Echron\IO\Data\FileStat;
 use Echron\IO\Data\FileStatCollection;
 use Echron\IO\Data\FileTransferInfo;
 use Echron\IO\Data\FileType;
-use Echron\IO\Helper\FileHelper;
-use Echron\Tools\StringHelper;
 use Exception;
-use phpseclib3\Crypt\Common\AsymmetricKey;
-use phpseclib3\Crypt\RSA;
 use function file_exists;
-use function file_get_contents;
 use function is_null;
 
 class SFTP extends Base
 {
-    private string $host;
-    private int $port;
-    private int $timeout;
-    private string|null $username = null;
-    private string|AsymmetricKey|null $password = null;
-
-    private SFTPClient|null $sftpClient = null;
-    private bool $connected = false;
-    private int|null $lastCommand = null;
-    private int $reconnectAfterInactivitySeconds = 5 * 60;
-
-    public function __construct(string $host, int $port = 22, int $timeout = 30)
+    public function __construct(private SFTPClient $sftpClient)
     {
-        $this->host = $host;
-        $this->port = $port;
-        $this->timeout = $timeout;
-    }
 
-    public function getHost(): string
-    {
-        return $this->host;
-    }
-
-    public function loginWithPassword(string $username, string $password = null): void
-    {
-        $this->username = $username;
-        $this->password = $password;
-    }
-
-    public function loginWithKey(string $username, string $keyFilePath, string|null $keyFilePassword = null): void
-    {
-        if (!file_exists($keyFilePath)) {
-            $maskedKeyFile = FileHelper::maskFileName($keyFilePath);
-
-            throw new Exception('Key file "' . $maskedKeyFile . '" does not exist');
-        }
-
-        if (!is_null($keyFilePassword)) {
-            $key = RSA::load(file_get_contents($keyFilePath), $keyFilePassword);
-        } else {
-            $key = RSA::load(file_get_contents($keyFilePath));
-        }
-
-        $this->username = $username;
-        $this->password = $key;
     }
 
     public function push(string $local, string $remote, int $setRemoteChangeDate = null): FileTransferInfo
@@ -73,9 +26,9 @@ class SFTP extends Base
             throw new Exception('Unable to push, local file does not exist');
         }
 
-        if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
-            $this->connect();
-        }
+//        if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
+//            $this->connect();
+//        }
         //Create directory
 
         $directory = dirname($remote);
@@ -113,62 +66,29 @@ class SFTP extends Base
 
     }
 
-    private function connect(): void
-    {
-        if ($this->sftpClient !== null) {
-            $this->sftpClient->disconnect();
-        } else {
-            $this->sftpClient = new SFTPClient($this->host, $this->port, $this->timeout);
-        }
-        $this->connected = false;
-        // TODO: if we use "setClient", these properties will not be defined
-
-
-        if ($this->username === null) {
-            throw new Exception('Username must be defined');
-        }
-        if ($this->password === null) {
-            throw new Exception('Password must be defined');
-        }
-        $authenticated = $this->sftpClient->login($this->username, $this->password);
-        if (!$authenticated) {
-            $this->sftpClient = null;
-            throw new Exception('Unable to login: not authenticated 2 `' . $this->username . '@' . $this->host . ':' . $this->port . '`');
-        }
-        $this->connected = true;
-    }
-
-    public function disconnect(): void
-    {
-        if ($this->sftpClient !== null) {
-            $this->sftpClient->disconnect();
-        }
-        $this->connected = false;
-    }
-
     public function setRemoteChangeDate(string $remote, int $changeDate): bool
     {
-        if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
-            $this->connect();
-        }
+//        if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
+//            $this->connect();
+//        }
 
         return $this->sftpClient->touch($remote, $changeDate);
     }
 
     public function delete(string $remote): bool
     {
-        if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
-            $this->connect();
-        }
+//        if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
+//            $this->connect();
+//        }
         //Not recursive: return $this->getClient()->delete($remotePath, false);
         return $this->sftpClient->delete($remote);
     }
 
     public function remoteFileExists(string $remote): bool
     {
-        if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
-            $this->connect();
-        }
+//        if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
+//            $this->connect();
+//        }
         $this->sftpClient->disableStatCache();
 
         return $this->sftpClient->file_exists($remote);
@@ -181,9 +101,9 @@ class SFTP extends Base
         bool   $showProgress = false
     ): FileTransferInfo
     {
-        if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
-            $this->connect();
-        }
+//        if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
+//            $this->connect();
+//        }
 
         $progress = null;
         if ($showProgress) {
@@ -215,9 +135,9 @@ class SFTP extends Base
 
     public function getRemoteFileStat(string $remote): FileStat
     {
-        if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
-            $this->connect();
-        }
+//        if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
+//            $this->connect();
+//        }
         try {
 
 
@@ -259,7 +179,7 @@ class SFTP extends Base
         };
     }
 
-    public function getClient(): SFTPClient|null
+    public function getClient(): SFTPClient
     {
         return $this->sftpClient;
     }
@@ -268,14 +188,13 @@ class SFTP extends Base
     {
         if ($disconnectIfClientExists && !is_null($this->sftpClient) && $this->sftpClient->isConnected()) {
             $this->sftpClient->disconnect();
-            $this->connected = false;
         }
         $this->sftpClient = $sftpClient;
+    }
 
-        $this->username = $sftpClient->getUsername();
-        $this->password = $sftpClient->getLoginArgs();
-
-        $this->connected = true;
+    public function disconnect(): void
+    {
+        $this->sftpClient->disconnect();
     }
 
     /**
@@ -283,9 +202,9 @@ class SFTP extends Base
      */
     public function list(string $remotePath, bool $recursive = false): FileStatCollection
     {
-        if (!$this->sftpClient->isConnected()) {
-            $this->connect();
-        }
+//        if (!$this->sftpClient->isConnected()) {
+//            $this->connect();
+//        }
 
         $rawFiles = $this->sftpClient->rawlist($remotePath, $recursive);
         if ($rawFiles === false) {
@@ -358,29 +277,10 @@ class SFTP extends Base
         // TODO: is forward slash the correct path separator?
         $pathSeparator = '/';
 
-        if (StringHelper::endsWith($part1, $pathSeparator)) {
+        if (str_ends_with($part1, $pathSeparator)) {
             return $part1 . $part2;
         }
 
         return $part1 . $pathSeparator . $part2;
     }
-
-    private function checkConnection(): void
-    {
-        if ($this->connected) {
-            $secondsSinceLastCommand = (int)gmdate('U') - (int)$this->lastCommand;
-
-            if ($secondsSinceLastCommand > $this->reconnectAfterInactivitySeconds) {
-                //Reconnect
-                $this->disconnect();
-            }
-        }
-        if (!$this->connected) {
-            $this->connect();
-        }
-
-        $this->lastCommand = (int)gmdate('U');
-    }
-
-
 }
