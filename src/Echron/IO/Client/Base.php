@@ -132,7 +132,7 @@ abstract class Base implements LoggerAwareInterface
             //                    $this->setRemoteChangeDate($remote, $localFileStat->getChangeDate());
 
             // TODO: check transferred bytes
-            $result = new FileTransferInfo(true);
+            $result = new FileTransferInfo($uploaded);
             $result->setLazyTransfer(true, true);
 
             return $result;
