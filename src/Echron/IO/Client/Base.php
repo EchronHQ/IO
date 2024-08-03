@@ -94,15 +94,9 @@ abstract class Base implements LoggerAwareInterface
 
         //TODO: when datetime is different or only when remote file is newer?
         if (!$localFileStat->equals($remoteFileStat)) {
-            // TODO: use $downloaded to determine if file was really downloaded or not
-            $downloaded = $this->pull($remote, $local, $remoteFileStat->getChangeDate());
-            //                if ($downloaded) {
-            //                $this->setLocalChangeDate($local, $remoteFileStat->getChangeDate());
-            // TODO: check transferred bytes
-            $result = new FileTransferInfo(true);
-            $result->setLazyTransfer(true, true);
-
-            return $result;
+            $downloadTransferInfo = $this->pull($remote, $local, $remoteFileStat->getChangeDate());
+            $downloadTransferInfo->setLazyTransfer(true, true);
+            return $downloadTransferInfo;
         }
         $result = new FileTransferInfo(true);
         $result->setLazyTransfer(true, false);
@@ -121,24 +115,10 @@ abstract class Base implements LoggerAwareInterface
         $localFileStat = $this->getLocalFileStat($local);
 
         //            echo 'Push lazy (' . $local . ' > ' . $remote . '):' . PHP_EOL . "\t" . 'Local:  ' . $localFileStat->debug() . PHP_EOL . "\t" . 'Remote: ' . $remoteFileStat->debug() . '' . PHP_EOL;
-
-        //echo 'Lazy' . \PHP_EOL;
-
         if (!$remoteFileStat->equals($localFileStat)) {
-            //                echo "\t" . 'Upload needed' . PHP_EOL;
-            $uploaded = $this->push($local, $remote, $localFileStat->getChangeDate());
-            // if ($uploaded) {
-            //                    echo "\t" . 'Set change date' . \PHP_EOL;
-            //                    $this->setRemoteChangeDate($remote, $localFileStat->getChangeDate());
-
-            // TODO: check transferred bytes
-            $result = new FileTransferInfo($uploaded);
-            $result->setLazyTransfer(true, true);
-
-            return $result;
-            //                } else {
-            //                    return false;
-            //                }
+            $uploadTransferInfo = $this->push($local, $remote, $localFileStat->getChangeDate());
+            $uploadTransferInfo->setLazyTransfer(true, true);
+            return $uploadTransferInfo;
         }
         $result = new FileTransferInfo(true);
         $result->setLazyTransfer(true, false);
