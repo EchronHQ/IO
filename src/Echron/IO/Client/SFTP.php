@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Echron\IO\Client;
 
 use Attlaz\Adapter\Base\Client\SFTP as SFTPClient;
+use Attlaz\AttlazMonolog\Model\Exception\ContextualException;
 use Echron\IO\Data\FileStat;
 use Echron\IO\Data\FileStatCollection;
 use Echron\IO\Data\FileTransferInfo;
@@ -47,7 +48,7 @@ class SFTP extends Base
         try {
             $fileIsUploaded = $this->sftpClient->put($remote, $local, SFTPClient::SOURCE_LOCAL_FILE);
         } catch (\Throwable $ex) {
-            throw new Exception('Unable to push file from `' . $local . '` to `' . $remote . '`: sftp put error', 0, $ex);
+            throw new ContextualException('Unable to push file from `' . $local . '` to `' . $remote . '`: sftp put error', [], 0, $ex);
         }
 
 
@@ -120,7 +121,7 @@ class SFTP extends Base
         $fileIsDownloaded = $this->sftpClient->get($remote, $local, 0, -1, $progress);
 
         if (!$fileIsDownloaded) {
-            throw new Exception('Unable to pull remote file "' . $remote . '" (' . $this->sftpClient->getLastSFTPError() . ')');
+            throw new ContextualException('Unable to pull remote file "' . $remote . '"', ['seconds since last command' => $this->sftpClient->getSecondsSinceLastCommand(), 'SFTP last error' => $this->sftpClient->getLastSFTPError()]);
             //            var_dump($remote . ' => ' . $local);
         }
 
@@ -163,20 +164,8 @@ class SFTP extends Base
 
             return $stat;
         } catch (Exception $ex) {
-            throw new Exception('Unable to get remote file stats for `' . $remote . '`', 0, $ex);
+            throw new ContextualException('Unable to get remote file stats for `' . $remote . '`', ['seconds since last command' => $this->sftpClient->getSecondsSinceLastCommand()], 0, $ex);
         }
-    }
-
-    private function parseSFTPTypeToFileType(string $sftpType): FileType
-    {
-        //        if (!$this->sftpClient->isConnected()) {
-        //            $this->connectClient();
-        //        }
-        return match ($sftpType) {
-            'file' => FileType::File,
-            'dir' => FileType::Dir,
-            default => throw new Exception('Unknown SFTP file type "' . $sftpType . '"'),
-        };
     }
 
     public function getClient(): SFTPClient
@@ -212,6 +201,18 @@ class SFTP extends Base
         }
 
         return $this->getFiles($remotePath, $rawFiles, $recursive);
+    }
+
+    private function parseSFTPTypeToFileType(string $sftpType): FileType
+    {
+        //        if (!$this->sftpClient->isConnected()) {
+        //            $this->connectClient();
+        //        }
+        return match ($sftpType) {
+            'file' => FileType::File,
+            'dir' => FileType::Dir,
+            default => throw new Exception('Unknown SFTP file type "' . $sftpType . '"'),
+        };
     }
 
     private function getFiles(string $remotePath, array $rawFiles, bool $recursive): FileStatCollection
