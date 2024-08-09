@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a41d8d84b2362d409552c37c77df52c7",
+    "content-hash": "1fe9919e9a7572342860578fc8086a40",
     "packages": [
         {
             "name": "attlaz/adapter-base",
