@@ -32,4 +32,14 @@ class FileTransferInfo
     {
         return $this->bytesTransferred;
     }
+
+    public function transferWasLazy(): bool
+    {
+        return $this->wasLazyTransfer;
+    }
+
+    public function transferWasNeeded(): bool
+    {
+        return $this->transferWasNeeded;
+    }
 }
