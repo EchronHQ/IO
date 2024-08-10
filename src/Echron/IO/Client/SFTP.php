@@ -37,10 +37,12 @@ class SFTP extends Base
         //        var_dump($this->sftpClient->pwd() . ' ' . $directory);
 
         $sslc = $this->sftpClient->getSecondsSinceLastCommand();
+
+
         try {
             $dirCreated = $this->sftpClient->mkdir($directory, -1, true);
         } catch (\Throwable $ex) {
-            throw new ContextualException('Unable to push file from `' . $local . '` to `' . $remote . '`: unable to create remote dir `' . $directory . '`', ['seconds since last command' => $sslc], 0, $ex);
+            throw new ContextualException('Unable to push file from `' . $local . '` to `' . $remote . '`: (unable to create remote dir `' . $directory . '`): ' . $ex->getMessage(), ['seconds since last command' => $sslc], 0, $ex);
         }
 
 
@@ -48,12 +50,9 @@ class SFTP extends Base
         $sslc = $this->sftpClient->getSecondsSinceLastCommand();
         try {
             $fileIsUploaded = $this->sftpClient->put($remote, $local, SFTPClient::SOURCE_LOCAL_FILE);
-            if (!$fileIsUploaded) {
-                $lastSFTPError = $this->sftpClient->getLastSFTPError();
-                throw new Exception($lastSFTPError);
-            }
+
         } catch (\Throwable $ex) {
-            throw new ContextualException('Unable to push file from `' . $local . '` to `' . $remote . '`: sftp put error', ['seconds since last command' => $sslc], 0, $ex);
+            throw new ContextualException('Unable to push file from `' . $local . '` to `' . $remote . '`: ' . $ex->getMessage(), ['seconds since last command' => $sslc], 0, $ex);
         }
 
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Echron\IO\Data;
 
-class FileTransferInfo
+class FileTransferInfo implements \JsonSerializable
 {
     private bool $success;
     private int $bytesTransferred;
@@ -41,5 +41,10 @@ class FileTransferInfo
     public function transferWasNeeded(): bool
     {
         return $this->transferWasNeeded;
+    }
+
+    public function jsonSerialize(): array
+    {
+        return get_object_vars($this);
     }
 }
