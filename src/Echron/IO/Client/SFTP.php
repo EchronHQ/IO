@@ -36,19 +36,20 @@ class SFTP extends Base
 
         //        var_dump($this->sftpClient->pwd() . ' ' . $directory);
 
+        $sslc = $this->sftpClient->getSecondsSinceLastCommand();
         try {
             $dirCreated = $this->sftpClient->mkdir($directory, -1, true);
         } catch (\Throwable $ex) {
-            throw new Exception('Unable to push file from `' . $local . '` to `' . $remote . '`: unable to create remote dir `' . $directory . '`', 0, $ex);
+            throw new ContextualException('Unable to push file from `' . $local . '` to `' . $remote . '`: unable to create remote dir `' . $directory . '`', ['seconds since last command' => $sslc], 0, $ex);
         }
 
 
         //        var_dump($dirCreated);
-
+        $sslc = $this->sftpClient->getSecondsSinceLastCommand();
         try {
             $fileIsUploaded = $this->sftpClient->put($remote, $local, SFTPClient::SOURCE_LOCAL_FILE);
         } catch (\Throwable $ex) {
-            throw new ContextualException('Unable to push file from `' . $local . '` to `' . $remote . '`: sftp put error', [], 0, $ex);
+            throw new ContextualException('Unable to push file from `' . $local . '` to `' . $remote . '`: sftp put error', ['seconds since last command' => $sslc], 0, $ex);
         }
 
 
@@ -139,6 +140,7 @@ class SFTP extends Base
 //        if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {
 //            $this->connect();
 //        }
+        $sslc = $this->sftpClient->getSecondsSinceLastCommand();
         try {
 
 
@@ -164,7 +166,7 @@ class SFTP extends Base
 
             return $stat;
         } catch (Exception $ex) {
-            throw new ContextualException('Unable to get remote file stats for `' . $remote . '`', ['seconds since last command' => $this->sftpClient->getSecondsSinceLastCommand()], 0, $ex);
+            throw new ContextualException('Unable to get remote file stats for `' . $remote . '`', ['seconds since last command' => $sslc], 0, $ex);
         }
     }
 
