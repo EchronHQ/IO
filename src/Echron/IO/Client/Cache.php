@@ -7,6 +7,7 @@ namespace Echron\IO\Client;
 use Echron\IO\Data\FileStat;
 use Echron\IO\Data\FileStatCollection;
 use Echron\IO\Data\FileTransferInfo;
+use Echron\IO\Data\FileType;
 use Exception;
 use Psr\SimpleCache\CacheInterface;
 use function base64_decode;
@@ -57,9 +58,12 @@ class Cache extends Base
         if ($this->cache->has($statKey)) {
             $result = $this->cache->get($statKey);
 
-            if ($result instanceof FileStat) {
-                return $result;
-            }
+            $stat = new FileStat($result['path'], FileType::from($result['type']));
+            $stat->setExists($result['exists']);
+            $stat->setChangeDate($result['changeDate']);
+            $stat->setBytes($result['bytes']);
+
+            return $stat;
         }
         $stat = new FileStat($remote);
         $stat->setExists(false);
@@ -114,24 +118,32 @@ class Cache extends Base
         return true;
     }
 
-    private function setRemoteFileStat(string $remote, FileStat $stat): void
-    {
-        $key = $this->formatName($remote);
-        $statKey = $key . '_stat';
-
-        $this->cache->set($statKey, $stat);
-    }
-
-    private function formatName(string $input): string
-    {
-        return sha1($input);
-    }
-
     /**
      * @inheritDoc
      */
     public function list(string $remotePath, bool $recursive = false): FileStatCollection
     {
         throw new Exception('Not implemented');
+    }
+
+    private function setRemoteFileStat(string $remote, FileStat $stat): void
+    {
+        $key = $this->formatName($remote);
+        $statKey = $key . '_stat';
+
+        $data = [
+            'path' => $stat->getPath(),
+            'type' => $stat->getType()->value,
+            'exists' => $stat->getExists(),
+            'changeDate' => $stat->getChangeDate(),
+            'bytes' => $stat->getBytes(),
+
+        ];
+        $this->cache->set($statKey, $stat);
+    }
+
+    private function formatName(string $input): string
+    {
+        return sha1($input);
     }
 }
