@@ -139,7 +139,7 @@ class Cache extends Base
             'bytes' => $stat->getBytes(),
 
         ];
-        $this->cache->set($statKey, $stat);
+        $this->cache->set($statKey, $data);
     }
 
     private function formatName(string $input): string
