@@ -115,7 +115,7 @@ class GoogleDrive extends Base
         return !is_null($file);
     }
 
-    public function pull(string $remote, string $local, int $localChangeDate = null): FileTransferInfo
+    public function pull(string $remote, string $local, int|null $localChangeDate = null): FileTransferInfo
     {
         try {
             $file = $this->getFileByName($remote);

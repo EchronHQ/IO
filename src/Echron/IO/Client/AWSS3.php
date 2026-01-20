@@ -168,7 +168,7 @@ class AWSS3 extends Base
         throw new Exception('Not implemented');
     }
 
-    public function pull(string $remote, string $local, int $localChangeDate = null): FileTransferInfo
+    public function pull(string $remote, string $local, int|null $localChangeDate = null): FileTransferInfo
     {
         $result = $this->s3Client->getObject([
             'Bucket' => $this->bucket,

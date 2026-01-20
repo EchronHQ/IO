@@ -100,10 +100,10 @@ class SFTP extends Base
     }
 
     public function pull(
-        string $remote,
-        string $local,
-        int    $localChangeDate = null,
-        bool   $showProgress = false
+        string   $remote,
+        string   $local,
+        int|null $localChangeDate = null,
+        bool     $showProgress = false
     ): FileTransferInfo
     {
 //        if ($this->sftpClient === null || !$this->sftpClient->isConnected()) {

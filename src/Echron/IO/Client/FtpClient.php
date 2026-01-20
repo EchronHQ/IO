@@ -115,7 +115,7 @@ class FtpClient extends Base
         return $this->client->fileExists($remote);
     }
 
-    public function pull(string $remote, string $local, int $localChangeDate = null): FileTransferInfo
+    public function pull(string $remote, string $local, int|null $localChangeDate = null): FileTransferInfo
     {
         try {
             $data = $this->client->read($remote);

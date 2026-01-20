@@ -76,7 +76,7 @@ class Cache extends Base
         return $this->getRemoteFileStat($remote)->getExists();
     }
 
-    public function pull(string $remote, string $local, int $localChangeDate = null): FileTransferInfo
+    public function pull(string $remote, string $local, int|null $localChangeDate = null): FileTransferInfo
     {
         $key = $this->formatName($remote);
 

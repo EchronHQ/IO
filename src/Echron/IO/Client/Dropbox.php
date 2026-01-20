@@ -31,7 +31,7 @@ class Dropbox extends Base
 
     private $callbackUrl = "https://echron.be/login-callback.php";
 
-    public function __construct(string $clientId, string $clientSecret, string $accessToken = null)
+    public function __construct(string $clientId, string $clientSecret, string|null $accessToken = null)
     {
         if (!class_exists('\Kunnu\Dropbox\DropboxApp')) {
             throw new Exception('kunalvarma05/dropbox-php-sdk package not installed');
@@ -90,11 +90,6 @@ class Dropbox extends Base
         return new FileTransferInfo(true);
     }
 
-    private function formatTime(int $time): string
-    {
-        return date('%Y-%m-%dT%H:%M:%SZ', $time);
-    }
-
     public function getRemoteFileStat(string $remote): FileStat
     {
         $fileStat = new FileStat($remote);
@@ -127,22 +122,6 @@ class Dropbox extends Base
             ->getExists();
     }
 
-    /**
-     * @param string $remote
-     * @return FileMetadata|FolderMetadata|null
-     */
-    private function getMetaData(string $remote): FileMetadata|FolderMetadata|null
-    {
-        try {
-            return $this->dropboxClient->getMetadata($remote);
-        } catch (DropboxClientException $ex) {
-            //TODO: check the exception message, should be something like:
-            //{"error_summary": "path/not_found/...", "error": {".tag": "path", "path": {".tag": "not_found"}}} 409
-        }
-
-        return null;
-    }
-
     public function delete(string $remote): bool
     {
         $metaData = $this->getMetaData($remote);
@@ -153,7 +132,7 @@ class Dropbox extends Base
         return true;
     }
 
-    public function pull(string $remote, string $local, int $localChangeDate = null): FileTransferInfo
+    public function pull(string $remote, string $local, int|null $localChangeDate = null): FileTransferInfo
     {
         /**
          * https://www.dropbox.com/developers/documentation/http/documentation#files-download
@@ -181,5 +160,26 @@ class Dropbox extends Base
     public function list(string $remotePath, bool $recursive = false): FileStatCollection
     {
         throw new Exception('Not implemented');
+    }
+
+    private function formatTime(int $time): string
+    {
+        return date('%Y-%m-%dT%H:%M:%SZ', $time);
+    }
+
+    /**
+     * @param string $remote
+     * @return FileMetadata|FolderMetadata|null
+     */
+    private function getMetaData(string $remote): FileMetadata|FolderMetadata|null
+    {
+        try {
+            return $this->dropboxClient->getMetadata($remote);
+        } catch (DropboxClientException $ex) {
+            //TODO: check the exception message, should be something like:
+            //{"error_summary": "path/not_found/...", "error": {".tag": "path", "path": {".tag": "not_found"}}} 409
+        }
+
+        return null;
     }
 }

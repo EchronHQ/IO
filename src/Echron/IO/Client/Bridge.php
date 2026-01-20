@@ -30,7 +30,7 @@ class Bridge extends Base
         return $this->slave;
     }
 
-    public function push(string $masterPath, string $slavePath, int $setRemoteChangeDate = null): FileTransferInfo
+    public function push(string $masterPath, string $slavePath, int|null $setRemoteChangeDate = null): FileTransferInfo
     {
         $tmpLocalPath = $this->getTempFilename();
 

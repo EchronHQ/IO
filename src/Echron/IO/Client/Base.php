@@ -37,7 +37,7 @@ abstract class Base implements LoggerAwareInterface
         $this->localFileChanged[] = $local;
     }
 
-    public function flushLocalStatCache(string $local = null): void
+    public function flushLocalStatCache(string|null $local = null): void
     {
         clearstatcache(false, $local);
     }
@@ -130,7 +130,7 @@ abstract class Base implements LoggerAwareInterface
 
     abstract public function remoteFileExists(string $remote): bool;
 
-    abstract public function pull(string $remote, string $local, int $localChangeDate = null): FileTransferInfo;
+    abstract public function pull(string $remote, string $local, int|null $localChangeDate = null): FileTransferInfo;
 
     public function setLocalChangeDate(string $local, int $changeDate): bool
     {
