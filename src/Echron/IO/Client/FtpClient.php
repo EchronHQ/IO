@@ -76,7 +76,7 @@ class FtpClient extends Base
         //        $this->client->getConnection();
     }
 
-    public function push(string $local, string $remote, int $setRemoteChangeDate = null): FileTransferInfo
+    public function push(string $local, string $remote, int|null $setRemoteChangeDate = null): FileTransferInfo
     {
         // TODO: Implement push() method.
         throw new Exception('Not implemented');

@@ -63,7 +63,7 @@ class Bridge extends Base
         return $this->slave->getRemoteChangeDate($remotePath);
     }
 
-    public function pull(string $slavePath, string $masterPath, int $localChangeDate = null): FileTransferInfo
+    public function pull(string $slavePath, string $masterPath, int|null $localChangeDate = null): FileTransferInfo
     {
         $tmpLocalPath = $this->getTempFilename();
 

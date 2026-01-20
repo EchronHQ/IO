@@ -21,7 +21,7 @@ abstract class Base implements LoggerAwareInterface
     protected LoggerInterface|null $logger = null;
     private array $localFileChanged = [];
 
-    abstract public function push(string $local, string $remote, int $setRemoteChangeDate = null): FileTransferInfo;
+    abstract public function push(string $local, string $remote, int|null $setRemoteChangeDate = null): FileTransferInfo;
 
     public function getLocalSize(string $local): int
     {

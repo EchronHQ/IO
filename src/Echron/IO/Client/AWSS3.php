@@ -43,7 +43,7 @@ class AWSS3 extends Base
         return $this->bucket;
     }
 
-    public function push(string $local, string $remote, int $setRemoteChangeDate = null): FileTransferInfo
+    public function push(string $local, string $remote, int|null $setRemoteChangeDate = null): FileTransferInfo
     {
         $options = [
             'Bucket' => $this->bucket,
@@ -90,47 +90,6 @@ class AWSS3 extends Base
         //            'VersionId'    => '<string>',
         //        ]);
 
-    }
-
-    private function listContent(string $bucket): FileStatCollection
-    {
-        $result = $this->s3Client->listObjects([
-            'Bucket' => $bucket,
-
-        ]);
-
-        $collection = new FileStatCollection();
-        if ($result->hasKey('Contents')) {
-            $objects = $result->get('Contents');
-            if ($objects !== null) {
-                foreach ($objects as $object) {
-                    $collection->add($this->objectInfoToFileStat($object));
-                }
-            }
-        }
-
-        return $collection;
-    }
-
-    private function objectInfoToFileStat(array $info): FileStat
-    {
-        if (!isset($info['Key'])) {
-            throw new Exception('Unable to parse object info to stat, key property not found');
-        }
-
-        $fileStat = new FileStat($info['Key']);
-        $fileStat->setExists(true);
-        if (isset($info['LastModified'])) {
-            /** @var DateTimeResult $lastModified */
-            $lastModified = $info['LastModified'];
-            $fileStat->setChangeDate($lastModified->getTimestamp());
-        }
-        if (isset($info['Size'])) {
-            $bytes = (int)$info['Size'];
-            $fileStat->setBytes($bytes);
-        }
-
-        return $fileStat;
     }
 
     public function delete(string $remote): bool
@@ -230,6 +189,47 @@ class AWSS3 extends Base
 
         // TODO: determine transferred bytes
         return new FileTransferInfo(true);
+    }
+
+    private function listContent(string $bucket): FileStatCollection
+    {
+        $result = $this->s3Client->listObjects([
+            'Bucket' => $bucket,
+
+        ]);
+
+        $collection = new FileStatCollection();
+        if ($result->hasKey('Contents')) {
+            $objects = $result->get('Contents');
+            if ($objects !== null) {
+                foreach ($objects as $object) {
+                    $collection->add($this->objectInfoToFileStat($object));
+                }
+            }
+        }
+
+        return $collection;
+    }
+
+    private function objectInfoToFileStat(array $info): FileStat
+    {
+        if (!isset($info['Key'])) {
+            throw new Exception('Unable to parse object info to stat, key property not found');
+        }
+
+        $fileStat = new FileStat($info['Key']);
+        $fileStat->setExists(true);
+        if (isset($info['LastModified'])) {
+            /** @var DateTimeResult $lastModified */
+            $lastModified = $info['LastModified'];
+            $fileStat->setChangeDate($lastModified->getTimestamp());
+        }
+        if (isset($info['Size'])) {
+            $bytes = (int)$info['Size'];
+            $fileStat->setBytes($bytes);
+        }
+
+        return $fileStat;
     }
 
 }

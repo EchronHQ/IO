@@ -66,7 +66,7 @@ class Dropbox extends Base
         echo 'AccessToken: ' . $accessToken->getToken() . PHP_EOL;
     }
 
-    public function push(string $local, string $remote, int $setRemoteChangeDate = null): FileTransferInfo
+    public function push(string $local, string $remote, int|null $setRemoteChangeDate = null): FileTransferInfo
     {
         $file = new DropboxFile($local);
         //TODO: file must start with / to refer as root

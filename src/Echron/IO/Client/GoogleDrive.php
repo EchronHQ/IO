@@ -26,12 +26,7 @@ class GoogleDrive extends Base
     private $service;
     private $credentialsFilePath;
 
-    public function available(): bool
-    {
-        return class_exists('\Google_Service_Drive');
-    }
-
-    public function __construct(string $accessToken = null, string $credentialsFilePath = 'credentials.json')
+    public function __construct(string|null $accessToken = null, string $credentialsFilePath = 'credentials.json')
     {
         if (!$this->available()) {
             throw new Exception('google/apiclient package not installed');
@@ -42,6 +37,11 @@ class GoogleDrive extends Base
         }
         $this->credentialsFilePath = $credentialsFilePath;
         $this->service = new Google_Service_Drive($this->client);
+    }
+
+    public function available(): bool
+    {
+        return class_exists('\Google_Service_Drive');
     }
 
     public function getAccessTokenStep1(): void
@@ -60,29 +60,7 @@ class GoogleDrive extends Base
         echo 'Accesstoken: ' . $accessToken['access_token'] . PHP_EOL;
     }
 
-    private function getClient(): Google_Client
-    {
-        $client = new Google_Client();
-        $client->setApplicationName('Echron IO lib');
-        $client->setScopes([
-            Google_Service_Drive::DRIVE_METADATA_READONLY,
-            Google_Service_Drive::DRIVE,
-        ]);
-        //        $client->setDeveloperKey('AIzaSyAkE4lWB9PzxEcqkfTNV_AIHeeQqlQzzX4');
-
-        //        $client->setAuthConfig('C:\Users\stijn\Documents\Dropbox\Projects\IO\Echron IO-776500f6e072.json');
-        $client->setAccessType('offline');
-        $client->setPrompt('select_account consent');
-
-        //if (\file_exists($credentialsFile)) {
-        $client->setAuthConfig($this->credentialsFilePath);
-
-        //}
-
-        return $client;
-    }
-
-    public function push(string $local, string $remote, int $setRemoteChangeDate = null): FileTransferInfo
+    public function push(string $local, string $remote, int|null $setRemoteChangeDate = null): FileTransferInfo
     {
         $file = new Google_Service_Drive_DriveFile();
         $file->setName($remote);
@@ -104,11 +82,6 @@ class GoogleDrive extends Base
 
         // TODO: determine transferred bytes
         return new FileTransferInfo(true);
-    }
-
-    private function formatTime(int $time): string
-    {
-        return date('%Y-%m-%dT%H:%M:%SZ', $time);
     }
 
     public function getRemoteFileStat(string $remote): FileStat
@@ -140,22 +113,6 @@ class GoogleDrive extends Base
         $file = $this->getFileByName($remote);
 
         return !is_null($file);
-    }
-
-    private function getFileByName(string $remote): ?Google_Service_Drive_DriveFile
-    {
-        //TODO: find a better way to get a file by name instead of getting all files in the Google Drive...
-        $files = $this->service->files->listFiles();
-        /** @var Google_Service_Drive_DriveFile $file */
-        foreach ($files as $file) {
-            //            $file->getParents()
-            //            echo 'File: ' . $file->getName() . \PHP_EOL;
-            if ($file->getName() === $remote) {
-                return $file;
-            }
-        }
-
-        return null;
     }
 
     public function pull(string $remote, string $local, int $localChangeDate = null): FileTransferInfo
@@ -216,5 +173,48 @@ class GoogleDrive extends Base
     public function list(string $remotePath, bool $recursive = false): FileStatCollection
     {
         throw new Exception('Not implemented');
+    }
+
+    private function getClient(): Google_Client
+    {
+        $client = new Google_Client();
+        $client->setApplicationName('Echron IO lib');
+        $client->setScopes([
+            Google_Service_Drive::DRIVE_METADATA_READONLY,
+            Google_Service_Drive::DRIVE,
+        ]);
+        //        $client->setDeveloperKey('AIzaSyAkE4lWB9PzxEcqkfTNV_AIHeeQqlQzzX4');
+
+        //        $client->setAuthConfig('C:\Users\stijn\Documents\Dropbox\Projects\IO\Echron IO-776500f6e072.json');
+        $client->setAccessType('offline');
+        $client->setPrompt('select_account consent');
+
+        //if (\file_exists($credentialsFile)) {
+        $client->setAuthConfig($this->credentialsFilePath);
+
+        //}
+
+        return $client;
+    }
+
+    private function formatTime(int $time): string
+    {
+        return date('%Y-%m-%dT%H:%M:%SZ', $time);
+    }
+
+    private function getFileByName(string $remote): ?Google_Service_Drive_DriveFile
+    {
+        //TODO: find a better way to get a file by name instead of getting all files in the Google Drive...
+        $files = $this->service->files->listFiles();
+        /** @var Google_Service_Drive_DriveFile $file */
+        foreach ($files as $file) {
+            //            $file->getParents()
+            //            echo 'File: ' . $file->getName() . \PHP_EOL;
+            if ($file->getName() === $remote) {
+                return $file;
+            }
+        }
+
+        return null;
     }
 }

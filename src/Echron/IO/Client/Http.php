@@ -31,7 +31,7 @@ class Http extends Base
         ];
     }
 
-    public function pull(string $remote, string $local, int $localChangeDate = null): FileTransferInfo
+    public function pull(string $remote, string $local, int|null $localChangeDate = null): FileTransferInfo
     {
         $options = [];
         if (!is_null($this->basicAuth)) {
@@ -60,7 +60,7 @@ class Http extends Base
         return new FileTransferInfo(true);
     }
 
-    public function push(string $local, string $remote, int $setRemoteChangeDate = null): FileTransferInfo
+    public function push(string $local, string $remote, int|null $setRemoteChangeDate = null): FileTransferInfo
     {
         throw new Exception('Not implemented');
     }

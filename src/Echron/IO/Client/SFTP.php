@@ -21,7 +21,7 @@ class SFTP extends Base
 
     }
 
-    public function push(string $local, string $remote, int $setRemoteChangeDate = null): FileTransferInfo
+    public function push(string $local, string $remote, int|null $setRemoteChangeDate = null): FileTransferInfo
     {
         if (!file_exists($local)) {
             throw new Exception('Unable to push, local file does not exist');

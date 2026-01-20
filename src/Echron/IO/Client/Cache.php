@@ -26,7 +26,7 @@ class Cache extends Base
         $this->cache = $cache;
     }
 
-    public function push(string $local, string $remote, int $setRemoteChangeDate = null): FileTransferInfo
+    public function push(string $local, string $remote, int|null $setRemoteChangeDate = null): FileTransferInfo
     {
         $key = $this->formatName($remote);
         $statKey = $key . '_stat';

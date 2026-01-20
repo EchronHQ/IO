@@ -18,7 +18,7 @@ class Memory extends Base
     {
     }
 
-    public function push(string $local, string $remote, int $setRemoteChangeDate = null): FileTransferInfo
+    public function push(string $local, string $remote, int|null $setRemoteChangeDate = null): FileTransferInfo
     {
         //TODO: test if local exist
         $hashRemote = $this->hashFileName($remote);
@@ -95,7 +95,7 @@ class Memory extends Base
         return false;
     }
 
-    public function pull(string $remote, string $local, int $localChangeDate = null): FileTransferInfo
+    public function pull(string $remote, string $local, int|null $localChangeDate = null): FileTransferInfo
     {
         if (!$this->remoteFileExists($remote)) {
             throw new Exception('Unable to pull file: remote "' . $remote . '" does not exist');
