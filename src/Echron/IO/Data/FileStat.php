@@ -15,7 +15,7 @@ class FileStat
     private bool $exists = false;
     private FileType $type;
 
-    public function __construct(string $path, FileType $type = null)
+    public function __construct(string $path, FileType|null $type = null)
     {
         if (empty(trim($path))) {
             throw new InvalidArgumentException('FileStat path cannot be empty');
