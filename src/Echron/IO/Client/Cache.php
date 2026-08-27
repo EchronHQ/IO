@@ -55,16 +55,12 @@ class Cache extends Base
         $key = $this->formatName($remote);
         $statKey = $key . '_stat';
 
-        if ($this->cache->has($statKey)) {
-            $result = $this->cache->get($statKey);
 
-            $stat = new FileStat($result['path'], FileType::from($result['type']));
-            $stat->setExists($result['exists']);
-            $stat->setChangeDate($result['changeDate']);
-            $stat->setBytes($result['bytes']);
-
-            return $stat;
+        $cachedFileStat = $this->getCachedFileStat($statKey);
+        if ($cachedFileStat !== null) {
+            return $cachedFileStat;
         }
+
         $stat = new FileStat($remote);
         $stat->setExists(false);
 
@@ -124,6 +120,35 @@ class Cache extends Base
     public function list(string $remotePath, bool $recursive = false): FileStatCollection
     {
         throw new Exception('Not implemented');
+    }
+
+    private function getCachedFileStat(string $statKey): FileStat|null
+    {
+        if (!$this->cache->has($statKey)) {
+            return null;
+        }
+        $result = $this->cache->get($statKey);
+
+        $stat = new FileStat($result['path'], FileType::from($result['type']));
+        $stat->setExists($result['exists']);
+        if (isset($result['changeDate']) && is_int($result['changeDate'])) {
+            $stat->setChangeDate($result['changeDate']);
+        } else {
+            if ($this->logger === null) {
+                echo 'Invalid changeDate on cache item ' . $statKey . ' ' . "\n";
+                var_dump($result);
+            } else {
+                $this->logger->warning('Invalid cached fileStat', ['key' => $statKey, 'value' => $result]);
+            }
+
+
+            return null;
+            // throw new ContextualException('Invalid changeDate on cache', ['cache' => $result, 'key' => $statKey]);
+        }
+
+        $stat->setBytes($result['bytes']);
+
+        return $stat;
     }
 
     private function setRemoteFileStat(string $remote, FileStat $stat): void
